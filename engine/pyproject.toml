@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "storyrepo"
+version = "0.2.0"
+description = "storyrepo 长篇生产引擎:合同/任务书/四路上下文/机检/追踪/双视图/回炉(机制来自 webnovel-writer·oh-story·AI_NovelGenerator·chinese-novelist)"
+requires-python = ">=3.9"
+
+[project.scripts]
+storyrepo = "storyrepo.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["storyrepo*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
