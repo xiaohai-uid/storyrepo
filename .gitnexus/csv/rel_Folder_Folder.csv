@@ -1,0 +1,8 @@
+from,to,type,confidence,reason,step
+"Folder:CUsersa1691DocumentsObsidian Vault","Folder:CUsersa1691DocumentsObsidian Vault/00_Command","CONTAINS",1,"",0
+"Folder:CUsersa1691DocumentsObsidian Vault/00_Command","Folder:CUsersa1691DocumentsObsidian Vault/00_Command/AI","CONTAINS",1,"",0
+"Folder:CUsersa1691DocumentsObsidian Vault/00_Command/AI","Folder:CUsersa1691DocumentsObsidian Vault/00_Command/AI/Logs","CONTAINS",1,"",0
+"Folder:engine","Folder:engine/docs","CONTAINS",1,"",0
+"Folder:engine/docs","Folder:engine/docs/adr","CONTAINS",1,"",0
+"Folder:engine","Folder:engine/storyrepo","CONTAINS",1,"",0
+"Folder:engine","Folder:engine/tests","CONTAINS",1,"",0

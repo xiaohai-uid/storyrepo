@@ -1,0 +1,6 @@
+from,to,type,confidence,reason,step
+"Method:engine/tests/test_checks.py:TestLeaks.test_leak_fails#1","Method:engine/tests/test_checks.py:TestLeaks._gap_book#1","CALLS",0.85,"global",0
+"Method:engine/tests/test_checks.py:TestLeaks.test_no_leak_ok#1","Method:engine/tests/test_checks.py:TestLeaks._gap_book#1","CALLS",0.85,"global",0
+"Method:engine/tests/test_foundation.py:TestModels.test_review_issue_roundtrip#0","Method:engine/storyrepo/models.py:ReviewIssue.from_dict#1","CALLS",0.85,"import-resolved",0
+"Method:engine/tests/test_foundation.py:TestModels.test_promise_gap_entity_roundtrip#0","Method:engine/storyrepo/models.py:Promise.from_dict#1","CALLS",0.85,"import-resolved",0
+"Method:engine/tests/test_foundation.py:TestModels.test_promise_gap_entity_roundtrip#0","Method:engine/storyrepo/models.py:InfoGap.from_dict#1","CALLS",0.85,"import-resolved",0

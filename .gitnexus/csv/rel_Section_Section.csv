@@ -1,0 +1,54 @@
+from,to,type,confidence,reason,step
+"Section:CUsersa1691DocumentsObsidian Vault/00_Command/AI/Logs/2026-08-07.md:L1:AI Activity — 2026-08-07","Section:CUsersa1691DocumentsObsidian Vault/00_Command/AI/Logs/2026-08-07.md:L3:2026-08-07T14:01:35.000Z — codex","CONTAINS",1,"markdown-heading",0
+"Section:README.md:L1:storyrepo · 长篇小说写作 skill","Section:README.md:L7:为什么是 skill","CONTAINS",1,"markdown-heading",0
+"Section:README.md:L1:storyrepo · 长篇小说写作 skill","Section:README.md:L11:安装(三选一)","CONTAINS",1,"markdown-heading",0
+"Section:README.md:L25:.agents:   ~/.agents/skills/storyrepo/","Section:README.md:L30:引擎(支撑工具,可选)","CONTAINS",1,"markdown-heading",0
+"Section:README.md:L37:无 pip 环境也 OK,vendor/ 自带 get-pip 引导器;214 个测试见 engine/tests","Section:README.md:L40:流水线(agent 按 SKILL.md 自动执行)","CONTAINS",1,"markdown-heading",0
+"Section:README.md:L37:无 pip 环境也 OK,vendor/ 自带 get-pip 引导器;214 个测试见 engine/tests","Section:README.md:L50:机制出处(全部对照开源先贤实现)","CONTAINS",1,"markdown-heading",0
+"Section:README.md:L37:无 pip 环境也 OK,vendor/ 自带 get-pip 引导器;214 个测试见 engine/tests","Section:README.md:L62:真实案例","CONTAINS",1,"markdown-heading",0
+"Section:README.md:L37:无 pip 环境也 OK,vendor/ 自带 get-pip 引导器;214 个测试见 engine/tests","Section:README.md:L66:许可","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L6:故事仓库 v2 · 长篇生产系统","Section:SKILL.md:L16:一、开书流(新书必经,见 references/opening.md)","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L6:故事仓库 v2 · 长篇生产系统","Section:SKILL.md:L24:二、章事务(每章一轮,顺序不可倒置)","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L24:二、章事务(每章一轮,顺序不可倒置)","Section:SKILL.md:L28:Step 0 预检(gate)","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L24:二、章事务(每章一轮,顺序不可倒置)","Section:SKILL.md:L34:Step 1 合同","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L24:二、章事务(每章一轮,顺序不可倒置)","Section:SKILL.md:L40:Step 2 任务书(五段,references/task-brief.md)","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L24:二、章事务(每章一轮,顺序不可倒置)","Section:SKILL.md:L48:Step 3 起草","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L24:二、章事务(每章一轮,顺序不可倒置)","Section:SKILL.md:L56:Step 4 机检(gate,脚本)","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L24:二、章事务(每章一轮,顺序不可倒置)","Section:SKILL.md:L62:Step 5 评审(子代理,独立上下文)","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L24:二、章事务(每章一轮,顺序不可倒置)","Section:SKILL.md:L69:Step 6 润色","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L24:二、章事务(每章一轮,顺序不可倒置)","Section:SKILL.md:L72:Step 7 结算(data-agent + 追踪事务)","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L24:二、章事务(每章一轮,顺序不可倒置)","Section:SKILL.md:L78:Step 8 结转","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L6:故事仓库 v2 · 长篇生产系统","Section:SKILL.md:L86:三、恢复契约","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L6:故事仓库 v2 · 长篇生产系统","Section:SKILL.md:L93:四、回炉(大修,references/tracking.md §5)","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L6:故事仓库 v2 · 长篇生产系统","Section:SKILL.md:L101:五、上下文预算(硬约束,references/context-budget.md)","CONTAINS",1,"markdown-heading",0
+"Section:SKILL.md:L6:故事仓库 v2 · 长篇生产系统","Section:SKILL.md:L108:六、关联文件","CONTAINS",1,"markdown-heading",0
+"Section:engine/CONTEXT.md:L1:Storyrepo Context","Section:engine/CONTEXT.md:L5:Language","CONTAINS",1,"markdown-heading",0
+"Section:references/anti-ai-flavor.md:L1:Anti-AI 味:三遍法与禁词表","Section:references/anti-ai-flavor.md:L5:三遍法(pass 1 → 2 → 3)","CONTAINS",1,"markdown-heading",0
+"Section:references/anti-ai-flavor.md:L1:Anti-AI 味:三遍法与禁词表","Section:references/anti-ai-flavor.md:L11:禁词表(AI 指纹,命中即改)","CONTAINS",1,"markdown-heading",0
+"Section:references/anti-ai-flavor.md:L1:Anti-AI 味:三遍法与禁词表","Section:references/anti-ai-flavor.md:L22:四、质量维度检查(评审要点)","CONTAINS",1,"markdown-heading",0
+"Section:references/opening.md:L1:开书流详情(3 层问答 + 偏好 + 建仓 + 模式)","Section:references/opening.md:L5:L0 偏好加载与中断检测","CONTAINS",1,"markdown-heading",0
+"Section:references/opening.md:L1:开书流详情(3 层问答 + 偏好 + 建仓 + 模式)","Section:references/opening.md:L10:L1 核心定位(必答,3 问)","CONTAINS",1,"markdown-heading",0
+"Section:references/opening.md:L1:开书流详情(3 层问答 + 偏好 + 建仓 + 模式)","Section:references/opening.md:L20:L2 定制(5 问,快问快答,可跳过)","CONTAINS",1,"markdown-heading",0
+"Section:references/opening.md:L1:开书流详情(3 层问答 + 偏好 + 建仓 + 模式)","Section:references/opening.md:L24:L3 标题(3 候选 + 用户选/自拟)","CONTAINS",1,"markdown-heading",0
+"Section:references/opening.md:L1:开书流详情(3 层问答 + 偏好 + 建仓 + 模式)","Section:references/opening.md:L28:规划与确认","CONTAINS",1,"markdown-heading",0
+"Section:references/opening.md:L1:开书流详情(3 层问答 + 偏好 + 建仓 + 模式)","Section:references/opening.md:L34:模式选择(确认后)","CONTAINS",1,"markdown-heading",0
+"Section:references/opening.md:L1:开书流详情(3 层问答 + 偏好 + 建仓 + 模式)","Section:references/opening.md:L42:疯狂创作契约","CONTAINS",1,"markdown-heading",0
+"Section:references/opening.md:L1:开书流详情(3 层问答 + 偏好 + 建仓 + 模式)","Section:references/opening.md:L46:大纲安全审查(批次级,每卷开写前或大改后执行)","CONTAINS",1,"markdown-heading",0
+"Section:references/protocol.md:L1:仓库协议(目录/命名/commit/retcon/双视图)","Section:references/protocol.md:L5:1. 目录","CONTAINS",1,"markdown-heading",0
+"Section:references/protocol.md:L1:仓库协议(目录/命名/commit/retcon/双视图)","Section:references/protocol.md:L34:2. 状态卡固定 7 栏(跟踪:上下文.md,≤12288B)","CONTAINS",1,"markdown-heading",0
+"Section:references/protocol.md:L1:仓库协议(目录/命名/commit/retcon/双视图)","Section:references/protocol.md:L46:3. 命名与 front matter","CONTAINS",1,"markdown-heading",0
+"Section:references/protocol.md:L1:仓库协议(目录/命名/commit/retcon/双视图)","Section:references/protocol.md:L52:4. 设定变更(retcon)","CONTAINS",1,"markdown-heading",0
+"Section:references/protocol.md:L1:仓库协议(目录/命名/commit/retcon/双视图)","Section:references/protocol.md:L57:5. 双视图原则(作者真相 vs 读者已知)","CONTAINS",1,"markdown-heading",0
+"Section:references/review-schema.md:L1:评审 Schema(Step 5,子代理专用)","Section:references/review-schema.md:L5:输出(严格 JSON,不写文件、不评分、不口头总结)","CONTAINS",1,"markdown-heading",0
+"Section:references/review-schema.md:L1:评审 Schema(Step 5,子代理专用)","Section:references/review-schema.md:L27:门禁规则","CONTAINS",1,"markdown-heading",0
+"Section:references/review-schema.md:L1:评审 Schema(Step 5,子代理专用)","Section:references/review-schema.md:L35:维度速查(映射 severity)","CONTAINS",1,"markdown-heading",0
+"Section:references/review-schema.md:L1:评审 Schema(Step 5,子代理专用)","Section:references/review-schema.md:L47:评审后流程","CONTAINS",1,"markdown-heading",0
+"Section:references/task-brief.md:L1:五段写作任务书 + 上下文预算","Section:references/task-brief.md:L5:1. 数据权重(高→低)","CONTAINS",1,"markdown-heading",0
+"Section:references/task-brief.md:L1:五段写作任务书 + 上下文预算","Section:references/task-brief.md:L9:2. 五段任务书格式(Step 2 起草只读它)","CONTAINS",1,"markdown-heading",0
+"Section:references/task-brief.md:L1:五段写作任务书 + 上下文预算","Section:references/task-brief.md:L19:3. 四路上下文(起草时组装)","CONTAINS",1,"markdown-heading",0
+"Section:references/task-brief.md:L1:五段写作任务书 + 上下文预算","Section:references/task-brief.md:L28:4. 预算硬上限(每次续写/每章)","CONTAINS",1,"markdown-heading",0
+"Section:references/tracking.md:L1:追踪系统(单一权威 + 双视图)","Section:references/tracking.md:L6:1. 状态文件 `_tracking-state.json`(节选字段)","CONTAINS",1,"markdown-heading",0
+"Section:references/tracking.md:L1:追踪系统(单一权威 + 双视图)","Section:references/tracking.md:L23:2. 逐章记录(第NNN.md,≤1.5K 目标/3K 硬限)","CONTAINS",1,"markdown-heading",0
+"Section:references/tracking.md:L1:追踪系统(单一权威 + 双视图)","Section:references/tracking.md:L27:3. 命令","CONTAINS",1,"markdown-heading",0
+"Section:references/tracking.md:L1:追踪系统(单一权威 + 双视图)","Section:references/tracking.md:L39:4. 大修级联(`--mode revision`,回炉专用)","CONTAINS",1,"markdown-heading",0
+"Section:references/tracking.md:L1:追踪系统(单一权威 + 双视图)","Section:references/tracking.md:L49:5. 状态卡 7 栏(派生重建,固定顺序,防手改)","CONTAINS",1,"markdown-heading",0

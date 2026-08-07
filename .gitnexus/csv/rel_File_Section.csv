@@ -1,0 +1,23 @@
+from,to,type,confidence,reason,step
+"File:CUsersa1691DocumentsObsidian Vault/00_Command/AI/Logs/2026-08-07.md","Section:CUsersa1691DocumentsObsidian Vault/00_Command/AI/Logs/2026-08-07.md:L1:AI Activity — 2026-08-07","CONTAINS",1,"markdown-heading",0
+"File:README.md","Section:README.md:L1:storyrepo · 长篇小说写作 skill","CONTAINS",1,"markdown-heading",0
+"File:README.md","Section:README.md:L14:① 一键装进本机所有 agent(pi / codex / .agents / claude / opencode)","CONTAINS",1,"markdown-heading",0
+"File:README.md","Section:README.md:L18:② 只装 skill,不要引擎(纯协议模式,agent 也能用)","CONTAINS",1,"markdown-heading",0
+"File:README.md","Section:README.md:L21:③ 手动:把 SKILL.md + references/ + templates/ 拷进你的 agent 技能目录","CONTAINS",1,"markdown-heading",0
+"File:README.md","Section:README.md:L22:pi:        ~/.pi/agent/skills/storyrepo/","CONTAINS",1,"markdown-heading",0
+"File:README.md","Section:README.md:L23:claude:    ~/.claude/skills/storyrepo/","CONTAINS",1,"markdown-heading",0
+"File:README.md","Section:README.md:L24:codex:     ~/.codex/skills/storyrepo/","CONTAINS",1,"markdown-heading",0
+"File:README.md","Section:README.md:L25:.agents:   ~/.agents/skills/storyrepo/","CONTAINS",1,"markdown-heading",0
+"File:README.md","Section:README.md:L33:想用机检/追踪/账本(推荐):装引擎","CONTAINS",1,"markdown-heading",0
+"File:README.md","Section:README.md:L37:无 pip 环境也 OK,vendor/ 自带 get-pip 引导器;214 个测试见 engine/tests","CONTAINS",1,"markdown-heading",0
+"File:SKILL.md","Section:SKILL.md:L6:故事仓库 v2 · 长篇生产系统","CONTAINS",1,"markdown-heading",0
+"File:engine/CONTEXT.md","Section:engine/CONTEXT.md:L1:Storyrepo Context","CONTAINS",1,"markdown-heading",0
+"File:engine/docs/adr/0001-零依赖引擎与本地追踪.md","Section:engine/docs/adr/0001-零依赖引擎与本地追踪.md:L1:ADR-0001:引擎零第三方依赖,拒绝向量检索","CONTAINS",1,"markdown-heading",0
+"File:engine/docs/adr/0001-零依赖引擎与本地追踪.md","Section:engine/docs/adr/0001-零依赖引擎与本地追踪.md:L5:ADR-0002:issue 追踪用本地 markdown,暂不建 GitHub 仓库","CONTAINS",1,"markdown-heading",0
+"File:references/anti-ai-flavor.md","Section:references/anti-ai-flavor.md:L1:Anti-AI 味:三遍法与禁词表","CONTAINS",1,"markdown-heading",0
+"File:references/opening.md","Section:references/opening.md:L1:开书流详情(3 层问答 + 偏好 + 建仓 + 模式)","CONTAINS",1,"markdown-heading",0
+"File:references/protocol.md","Section:references/protocol.md:L1:仓库协议(目录/命名/commit/retcon/双视图)","CONTAINS",1,"markdown-heading",0
+"File:references/provenance.md","Section:references/provenance.md:L1:机制出处对照(复刻自证)","CONTAINS",1,"markdown-heading",0
+"File:references/review-schema.md","Section:references/review-schema.md:L1:评审 Schema(Step 5,子代理专用)","CONTAINS",1,"markdown-heading",0
+"File:references/task-brief.md","Section:references/task-brief.md:L1:五段写作任务书 + 上下文预算","CONTAINS",1,"markdown-heading",0
+"File:references/tracking.md","Section:references/tracking.md:L1:追踪系统(单一权威 + 双视图)","CONTAINS",1,"markdown-heading",0

@@ -1,0 +1,2 @@
+from,to,type,confidence,reason,step
+"Method:engine/storyrepo/models.py:ReviewIssue.__post_init__#0","Property:engine/storyrepo/models.py:ReviewIssue.blocking","ACCESSES",1,"write",0

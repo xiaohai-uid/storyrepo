@@ -1,0 +1,8 @@
+{
+  "name": "storyrepo",
+  "version": "0.2.0",
+  "description": "长篇小说生产系统:章事务/三重机检门禁/伏笔追踪/批次并行/去AI味。对 agent 说「写小说/续写第N章」即驱动完整写作流水线。",
+  "skills": "./skills",
+  "author": { "name": "xiaohai-uid" },
+  "license": "MIT"
+}
