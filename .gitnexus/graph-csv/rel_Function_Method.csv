@@ -1,2 +1,0 @@
-from,to,type,confidence,reason,step
-"Function:engine/storyrepo/review.py:_parse_issues","Method:engine/storyrepo/models.py:ReviewIssue.from_dict#1","CALLS",0.85,"import-resolved",0

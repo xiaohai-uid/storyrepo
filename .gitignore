@@ -6,3 +6,4 @@ build/
 .scratch/
 dist/
 engine/.venv/
+.gitnexus/
