@@ -1,7 +1,10 @@
-# -*- coding: utf-8 -*-
 import os
+
 from conftest import add_chapter
-from storyrepo import models, resume, review as rv, state as st
+
+from storyrepo import models, resume
+from storyrepo import review as rv
+from storyrepo import state as st
 
 
 def merged_ch1(book):
@@ -17,12 +20,17 @@ class TestDiagnose:
     def test_not_started_empty_book(self, book):
         d = resume.diagnose(book)
         assert d["status"] == "not_started"
-        assert d["files"] == {"正文": False, "评审报告": False, "追踪已合并": False, "状态卡新鲜": True}
+        assert d["files"] == {
+            "正文": False,
+            "评审报告": False,
+            "追踪已合并": False,
+            "状态卡新鲜": True,
+        }
         assert "第1章" in d["next_step"]
 
     def test_not_started_next_chapter(self, book):
         add_chapter(book, 1, prose="甲")
-        d = resume.diagnose(book)          # ch=None → 最新章+1
+        d = resume.diagnose(book)  # ch=None → 最新章+1
         assert d["status"] == "not_started"
         assert "第2章" in d["next_step"]
 
@@ -34,7 +42,9 @@ class TestDiagnose:
 
     def test_draft_with_blocking(self, book):
         add_chapter(book, 1, prose="甲")
-        rv.save_review(book, 1, [models.ReviewIssue("critical", "logic", "第1段", "设定冲突")])
+        rv.save_review(
+            book, 1, [models.ReviewIssue("critical", "logic", "第1段", "设定冲突")]
+        )
         d = resume.diagnose(book, 1)
         assert d["status"] == "draft"
         assert "blocking" in d["next_step"]

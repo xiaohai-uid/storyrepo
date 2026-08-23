@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
 """e2e 测试:全生命周期通过 + 人为破坏 → 非零退出。"""
+
 import os
-from conftest import make_book
+
 from storyrepo import e2e as e2e_mod
 
 
@@ -36,6 +36,8 @@ class TestE2E:
             f.write("{broken json")
         # 走 CLI 入口(退出码契约在此层)
         from types import SimpleNamespace
+
         from storyrepo import e2e as e2e_mod
+
         code = e2e_mod.cli_e2e(SimpleNamespace(root=root))
         assert code != 0, "损坏状态不应通过 e2e"

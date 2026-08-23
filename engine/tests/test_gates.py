@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
 """tests/test_gates.py:gate 三 stage 过滤(1/2弱提示/3/11 vs 全量)。
 覆盖:正常路径 + 失败路径 + 边界(空书、缺状态、非法参数、chapter 定向)。"""
+
 import os
 
 import pytest
+from conftest import add_chapter
 
 from storyrepo import state as st
 from storyrepo.gates import gate
-from conftest import add_chapter
 
 
 def refresh(root):
@@ -18,6 +18,7 @@ def refresh(root):
         st.merge_chapter_facts(s, st.chapter_num(f), st.frontmatter(p))
     st.save_state(root, s)
     from storyrepo import views
+
     views.write_views(root, s)
 
 
@@ -67,13 +68,13 @@ class TestPrewrite:
         refresh(book)
         add_chapter(book, 2, prose="秘密 S-001 泄露了。")
         r = gate(book, "prewrite")
-        assert r["passed"] is True                 # 泄密扫描被跳过,不拦 prewrite
+        assert r["passed"] is True  # 泄密扫描被跳过,不拦 prewrite
         assert any("泄密扫描(跳过)" in o for o in r["oks"])
 
     def test_words_weak_hint(self, book):
         add_chapter(book, 1, prose=clean_prose(100))
         r = gate(book, "prewrite")
-        assert r["passed"] is True                 # 字数不足只弱提示
+        assert r["passed"] is True  # 字数不足只弱提示
         assert any("字数窗口(弱提示" in o for o in r["oks"])
 
     def test_summary_fails(self, book):
@@ -93,7 +94,7 @@ class TestPrewrite:
         clean_book(book)
         r = gate(book, "prewrite")
         skipped = [o for o in r["oks"] if "(跳过)" in o]
-        assert len(skipped) == 7                    # 4,5,6,7,8,9,10 跳过
+        assert len(skipped) == 7  # 4,5,6,7,8,9,10 跳过
         assert any("追踪新鲜(跳过)" in o for o in skipped)
 
 
@@ -131,7 +132,7 @@ class TestPrecommit:
         add_chapter(book, 1, prose=clean_prose())
         add_chapter(book, 2, prose="这章 TODO。")
         refresh(book)
-        assert gate(book, "precommit")["passed"] is False      # 第2章占位符
+        assert gate(book, "precommit")["passed"] is False  # 第2章占位符
         assert gate(book, "precommit", chapter=1)["passed"] is True
         assert gate(book, "precommit", chapter=2)["passed"] is False
 
@@ -173,7 +174,7 @@ class TestErrors:
     def test_no_state_prewrite_passes_precommit_fails(self, book):
         add_chapter(book, 1, prose=clean_prose())
         os.remove(st.state_path(book))
-        assert gate(book, "prewrite")["passed"] is True       # 不依赖状态
+        assert gate(book, "prewrite")["passed"] is True  # 不依赖状态
         r = gate(book, "precommit")
         assert r["passed"] is False
         assert any("泄密扫描" in f for f in r["fails"])

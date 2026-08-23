@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """批次模式(batch.py):subagent-parallel 的批次计划与顺序合并。
 机制来源:规格 Implementation Decisions「批次模式」;合并路径与串行 commit(cmd_commit)等价。
 引擎只负责计划 JSON 结构与顺序合并;子代理编排(并行起草)发生在技能层,不进引擎。
@@ -7,13 +6,16 @@
 - merge_batch(root, plan, chapters_done):按章序逐章走既有 commit 路径
   (读 front matter → merge_chapter_facts → bump_revision → save_state → write_views);
   单章机检失败标记 rejected 不阻塞同批;已提交章由幂等守卫整批拒绝(报错,零写入)。"""
+
 import glob
 import os
+from collections.abc import Iterable
 from datetime import datetime
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, List, Optional
 
 from storyrepo import contract as ct
-from storyrepo import gates, state as st, views
+from storyrepo import gates, views
+from storyrepo import state as st
 
 MODE = "subagent-parallel"
 
@@ -33,12 +35,14 @@ def create_batch_plan(root: str, chapters: Iterable) -> Dict:
     s = st.load_state(root)
     items = []
     for ch in sorted({int(c) for c in chapters}):
-        items.append({
-            "chapter": ch,
-            "contract": ct.build_contract(root, s, ch),
-            "output_path": _body_glob(root, ch),
-            "status": "pending",
-        })
+        items.append(
+            {
+                "chapter": ch,
+                "contract": ct.build_contract(root, s, ch),
+                "output_path": _body_glob(root, ch),
+                "status": "pending",
+            }
+        )
     return {
         "book": s.get("book", ""),
         "mode": MODE,
@@ -72,7 +76,9 @@ def merge_batch(root: str, plan: Dict, chapters_done: Optional[Dict] = None) -> 
         try:
             ch = int(it["chapter"])
         except (TypeError, ValueError):
-            raise ValueError("批次计划非法:chapter 须为章号数字,收到 %r" % (it["chapter"],))
+            raise ValueError(
+                "批次计划非法:chapter 须为章号数字,收到 %r" % (it["chapter"],)
+            ) from None
         if ch < 1:
             raise ValueError("批次计划非法:章号须 ≥1,收到 %d" % ch)
         items.append((ch, it))
@@ -82,13 +88,17 @@ def merge_batch(root: str, plan: Dict, chapters_done: Optional[Dict] = None) -> 
     # 并发守卫:计划固化的修订号与当前不符 → 拒绝(防止两个并发 merge 交错污染)
     exp = plan.get("expected_revision")
     if exp is not None and int(exp) != st.revision(s):
-        raise ValueError("批次计划期望 rev %s,当前 %d——状态已变化,请重建计划" % (exp, st.revision(s)))
+        raise ValueError(
+            "批次计划期望 rev %s,当前 %d——状态已变化,请重建计划" % (exp, st.revision(s))
+        )
     # M1 幂等守卫:计划中任何章已提交 → 整批拒绝(重复 merge 同一计划在此被拦下)
     committed = {int(k) for k in s.get("chapters", {})}
     dup = [ch for ch, _ in items if ch in committed]
     if dup:
-        raise ValueError("批次含已提交章 %s(rev %d)。重写走 storyrepo revision --chapter N(重放式级联);或为剩余章另建计划。"
-                         % ("、".join(str(c) for c in dup), st.revision(s)))
+        raise ValueError(
+            "批次含已提交章 %s(rev %d)。重写走 storyrepo revision --chapter N(重放式级联);或为剩余章另建计划。"
+            % ("、".join(str(c) for c in dup), st.revision(s))
+        )
     # 预刷新(无 bump 保存 + 派生视图重建)
     st.save_state(root, s)
     views.write_views(root, s)
@@ -109,10 +119,14 @@ def merge_batch(root: str, plan: Dict, chapters_done: Optional[Dict] = None) -> 
             pattern = os.path.join(root, pattern)
         files = sorted(glob.glob(pattern)) if pattern else []
         if not files:
-            rejected.append({"chapter": ch, "reason": "缺正文(worker 未产出文件): %s" % pattern})
+            rejected.append(
+                {"chapter": ch, "reason": "缺正文(worker 未产出文件): %s" % pattern}
+            )
             continue
         if len(files) > 1:
-            rejected.append({"chapter": ch, "reason": "正文文件不唯一: %s" % "、".join(files)})
+            rejected.append(
+                {"chapter": ch, "reason": "正文文件不唯一: %s" % "、".join(files)}
+            )
             continue
         g = gates.gate(root, "precommit", ch)
         if not g["passed"]:

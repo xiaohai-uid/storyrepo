@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 """派生视图:续写状态卡(7 栏)与全部追踪视图的唯一定点重建。
 机制来源:oh-story tracking 双视图(作者真相/读者已知)与续写状态卡。
 只写 追踪/ 下的派生文件;状态本体写入只经 state.py。
 幂等:重复调用不炸;state 缺字段一律容错。"""
+
 import os
 import re
 
@@ -16,8 +16,8 @@ STYLE_ANCHOR = (
     "二、每章必有推进:情节、人物或伏笔至少一项向前。\n"
     "三、章末留钩:悬念、转折或新伏笔,让读者想翻下一页。"
 )
-CHAPTER_LOG_TARGET = 1536   # 逐章记录目标大小(字节)
-CHAPTER_LOG_MAX = 3072      # 逐章记录截断上限(字节)
+CHAPTER_LOG_TARGET = 1536  # 逐章记录目标大小(字节)
+CHAPTER_LOG_MAX = 3072  # 逐章记录截断上限(字节)
 
 
 def _cut(text, limit):
@@ -51,10 +51,10 @@ def _next_contract_line(root):
             m = re.match(r"^[-*]?\s*\[([ xX])\]\s*(.*)$", t)
             if m:
                 if m.group(1).lower() == "x":
-                    continue                      # 已勾选,跳过
-                return m.group(2).strip()         # 未勾选
+                    continue  # 已勾选,跳过
+                return m.group(2).strip()  # 未勾选
             if "[" not in t:
-                return t                          # 无勾选标记的普通行视为未勾选
+                return t  # 无勾选标记的普通行视为未勾选
     return None
 
 
@@ -93,12 +93,14 @@ def card7(root, state) -> str:
 
     L = [CARD_TITLE, ""]
     # 1 当前进度
-    L += ["## 1. 当前进度",
-          "最新章: %d / 计划: %d | 活跃承诺: %d | 未曝光信息差: %d"
-          % (latest, planned, len(actives), len(gaps)), ""]
+    L += [
+        "## 1. 当前进度",
+        "最新章: %d / 计划: %d | 活跃承诺: %d | 未曝光信息差: %d"
+        % (latest, planned, len(actives), len(gaps)),
+        "",
+    ]
     # 2 下一章合同
-    L += ["## 2. 下一章合同",
-          (contract[:120] if contract else NEXT_PLACEHOLDER), ""]
+    L += ["## 2. 下一章合同", (contract[:120] if contract else NEXT_PLACEHOLDER), ""]
     # 3 活跃伏笔
     L.append("## 3. 活跃伏笔")
     if actives:
@@ -166,22 +168,44 @@ def write_views(root, state) -> None:
 
 # ── 追踪/伏笔.md ──
 def _vault_table(state):
-    lines = ["# 伏笔与信息差台账", "",
-             "## 伏笔",
-             "| ID | 状态 | 埋设章 | 最近推进 | 完成章 | 备注 |",
-             "| --- | --- | --- | --- | --- | --- |"]
+    lines = [
+        "# 伏笔与信息差台账",
+        "",
+        "## 伏笔",
+        "| ID | 状态 | 埋设章 | 最近推进 | 完成章 | 备注 |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
     for pid, v in sorted(state.get("promises", {}).items()):
-        lines.append("| %s | %s | %s | %s | %s | %s |" % (
-            pid, v.get("status", "open"), _num(v.get("open_ch")), _num(v.get("adv_ch")),
-            _num(v.get("done_ch")), str(v.get("note", "")).replace("|", "\\|")))
-    lines += ["", "## 信息差",
-              "| ID | 状态 | 埋设章 | 最近推进 | 完成章 | 备注 |",
-              "| --- | --- | --- | --- | --- | --- |"]
+        lines.append(
+            "| %s | %s | %s | %s | %s | %s |"
+            % (
+                pid,
+                v.get("status", "open"),
+                _num(v.get("open_ch")),
+                _num(v.get("adv_ch")),
+                _num(v.get("done_ch")),
+                str(v.get("note", "")).replace("|", "\\|"),
+            )
+        )
+    lines += [
+        "",
+        "## 信息差",
+        "| ID | 状态 | 埋设章 | 最近推进 | 完成章 | 备注 |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
     for gid, v in sorted(state.get("info_gaps", {}).items()):
         status = "已曝光" if v.get("revealed") else "未曝光"
-        lines.append("| %s | %s | %s | %s | %s | %s |" % (
-            gid, status, _num(v.get("plant_ch")), "",
-            _num(v.get("reveal_ch")), str(v.get("note", "")).replace("|", "\\|")))
+        lines.append(
+            "| %s | %s | %s | %s | %s | %s |"
+            % (
+                gid,
+                status,
+                _num(v.get("plant_ch")),
+                "",
+                _num(v.get("reveal_ch")),
+                str(v.get("note", "")).replace("|", "\\|"),
+            )
+        )
     return "\n".join(lines)
 
 
@@ -208,16 +232,20 @@ def _author_truth(state):
 # ── 追踪/读者已知.md(读者视角) ──
 def _reader_known(state):
     lines = ["# 读者已知(读者视角)", "", "## 时间线(读者已见)"]
-    tl = [ev for ev in state.get("timeline", [])
-          if ev.get("kind", "fact") in ("fact", "reveal")]
+    tl = [
+        ev
+        for ev in state.get("timeline", [])
+        if ev.get("kind", "fact") in ("fact", "reveal")
+    ]
     if tl:
         for ev in tl:
             lines.append("- %s. %s" % (ev.get("ch", "?"), ev.get("event", "")))
     else:
         lines.append("（空）")
     lines += ["", "## 已曝光信息差"]
-    revealed = [(gid, v) for gid, v in state.get("info_gaps", {}).items()
-                if v.get("revealed")]
+    revealed = [
+        (gid, v) for gid, v in state.get("info_gaps", {}).items() if v.get("revealed")
+    ]
     if revealed:
         for gid, v in revealed:
             note = str(v.get("note", "")).strip()
@@ -229,15 +257,24 @@ def _reader_known(state):
 
 # ── 追踪/时间线.md(append-only 观感) ──
 def _timeline_table(state):
-    lines = ["# 时间线(append-only,只增不改)", "",
-             "| 章 | 类型 | 事件 |", "| --- | --- | --- |"]
+    lines = [
+        "# 时间线(append-only,只增不改)",
+        "",
+        "| 章 | 类型 | 事件 |",
+        "| --- | --- | --- |",
+    ]
     tl = state.get("timeline", [])
     if not tl:
         lines.append("|  |  | （空） |")
     for ev in tl:
-        lines.append("| %s | %s | %s |" % (
-            ev.get("ch", ""), ev.get("kind", "fact"),
-            str(ev.get("event", "")).replace("|", "\\|")))
+        lines.append(
+            "| %s | %s | %s |"
+            % (
+                ev.get("ch", ""),
+                ev.get("kind", "fact"),
+                str(ev.get("event", "")).replace("|", "\\|"),
+            )
+        )
     return "\n".join(lines)
 
 
@@ -252,12 +289,26 @@ def _write_entity_files(root, tk, state):
     for name, v in state.get("entity_states", {}).items():
         if not str(name).strip():
             continue
-        safe = str(name).replace("/", "_").replace("\\", "_").replace(":", "_").replace("*", "_").replace("?", "_").replace('"', "_").replace("<", "_").replace(">", "_").replace("|", "_")
+        safe = (
+            str(name)
+            .replace("/", "_")
+            .replace("\\", "_")
+            .replace(":", "_")
+            .replace("*", "_")
+            .replace("?", "_")
+            .replace('"', "_")
+            .replace("<", "_")
+            .replace(">", "_")
+            .replace("|", "_")
+        )
         first = v.get("first_ch")
-        lines = ["# 角色状态:%s" % name, "",
-                 "- 首现章: %s" % (first if first is not None else ""),
-                 "- 位置: %s" % str(v.get("where", "")).strip(),
-                 "- 状态: %s" % str(v.get("state", "")).strip()]
+        lines = [
+            "# 角色状态:%s" % name,
+            "",
+            "- 首现章: %s" % (first if first is not None else ""),
+            "- 位置: %s" % str(v.get("where", "")).strip(),
+            "- 状态: %s" % str(v.get("state", "")).strip(),
+        ]
         _write(root, os.path.join(tk, "角色状态"), "%s.md" % safe, "\n".join(lines))
 
 
@@ -271,8 +322,12 @@ def _write_chapter_logs(root, tk, state):
                 os.remove(os.path.join(ldir, f))
     for k in sorted(int(x) for x in state.get("chapters", {}) if str(x).isdigit()):
         content = _chapter_log(root, state, k)
-        _write(root, os.path.join(tk, "逐章记录"), "ch%03d.md" % k,
-               _cut(content, CHAPTER_LOG_MAX))
+        _write(
+            root,
+            os.path.join(tk, "逐章记录"),
+            "ch%03d.md" % k,
+            _cut(content, CHAPTER_LOG_MAX),
+        )
 
 
 def _chapter_constraints(root, ch):
@@ -297,8 +352,11 @@ def _chapter_log(root, state, ch):
     status = str(rec.get("status", "")).strip()
     words = str(rec.get("words", "")).strip()
     # 结果
-    events = [str(ev.get("event", "")) for ev in state.get("timeline", [])
-              if ev.get("ch") == ch]
+    events = [
+        str(ev.get("event", ""))
+        for ev in state.get("timeline", [])
+        if ev.get("ch") == ch
+    ]
     result = "; ".join(events) if events else "(无摘要)"
     meta = []
     if status:
@@ -354,12 +412,15 @@ def _chapter_log(root, state, ch):
     head = "# 逐章记录:第%d章" % ch
     if title:
         head += "《%s》" % title
-    return "\n".join([
-        head, "",
-        "- 结果: %s" % result,
-        "- 角色变化: %s" % ("; ".join(ent) if ent else "无"),
-        "- 伏笔变化: %s" % ("; ".join(pv) if pv else "无"),
-        "- 时间与揭示: %s" % ("; ".join(ts) if ts else "无"),
-        "- 约束: %s" % _chapter_constraints(root, ch),
-        "- 下一章承诺: %s" % (", ".join(nxt) if nxt else "无"),
-    ])
+    return "\n".join(
+        [
+            head,
+            "",
+            "- 结果: %s" % result,
+            "- 角色变化: %s" % ("; ".join(ent) if ent else "无"),
+            "- 伏笔变化: %s" % ("; ".join(pv) if pv else "无"),
+            "- 时间与揭示: %s" % ("; ".join(ts) if ts else "无"),
+            "- 约束: %s" % _chapter_constraints(root, ch),
+            "- 下一章承诺: %s" % (", ".join(nxt) if nxt else "无"),
+        ]
+    )

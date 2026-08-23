@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """模块 3:章合同构建(contract.py)。
 从 大纲/细纲蓝图.md 提取第 ch 章的写作合同:
 {"goal", "hard_constraints", "forbidden", "foreshadow_todo", "ending_requirement", "sources"}。
@@ -11,6 +10,7 @@
    suspense(悬念) / foreshadow(伏笔) / twist(反转)。
 2) 无表头管道行(简易,列序同表头): ch|标题|要发生什么|硬约束|禁区|角色|suspense|foreshadow|twist
 """
+
 import os
 import re
 from typing import Dict, List, Optional
@@ -21,7 +21,16 @@ OUTLINE_REL = os.path.join("大纲", "细纲蓝图.md")
 SUMMARY_REL = os.path.join("大纲", "总纲.md")
 
 # 简易行(无表头)的列序(同表头列序,从索引 1 起)
-_POSITIONAL = ("title", "goal", "hard", "forbidden", "roles", "suspense", "foreshadow", "twist")
+_POSITIONAL = (
+    "title",
+    "goal",
+    "hard",
+    "forbidden",
+    "roles",
+    "suspense",
+    "foreshadow",
+    "twist",
+)
 _HEADER_HINTS = ("要发生什么", "ch", "章", "章号", "章节")
 
 
@@ -60,7 +69,9 @@ def _norm_key(header: str) -> Optional[str]:
 
 
 def _looks_like_header(cells: List[str]) -> bool:
-    return any(("要发生什么" in c) or (c.strip().lower() in _HEADER_HINTS) for c in cells)
+    return any(
+        ("要发生什么" in c) or (c.strip().lower() in _HEADER_HINTS) for c in cells
+    )
 
 
 def _is_separator(cells: List[str]) -> bool:

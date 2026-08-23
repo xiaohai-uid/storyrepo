@@ -1,11 +1,14 @@
-# -*- coding: utf-8 -*-
 """学习与统计:金句收割 + AI 味反例吸收 + 每章文风统计/趋势。
 机制来源:webnovel-writer Step 7.3 金句收割(可选);反例吸收自评审报告(review.load_review);
 红线清单复用 checks.redlines(内置表 + 本书 文风/审查反例库.md 动态合并)。"""
-import os, re
+
+import os
+import re
 from typing import Dict, List
-from storyrepo import checks, state as st
+
+from storyrepo import checks
 from storyrepo import review as rv
+from storyrepo import state as st
 
 QUOTE_DIR = os.path.join("文风", "金句库")
 MAX_QUOTE_LEN = 25
@@ -34,7 +37,11 @@ def _counterexample_lines(root: str) -> List[str]:
     if not os.path.exists(p):
         return []
     with open(p, encoding="utf-8") as fh:
-        return [ln.strip() for ln in fh.read().splitlines() if ln.strip() and not ln.strip().startswith("#")]
+        return [
+            ln.strip()
+            for ln in fh.read().splitlines()
+            if ln.strip() and not ln.strip().startswith("#")
+        ]
 
 
 def _paragraphs(text: str) -> List[str]:
@@ -75,12 +82,16 @@ def absorb_review(root: str, ch: int) -> int:
     headers = []
     if os.path.exists(p):
         with open(p, encoding="utf-8") as fh:
-            headers = [ln for ln in fh.read().splitlines() if ln.strip().startswith("#")]
+            headers = [
+                ln for ln in fh.read().splitlines() if ln.strip().startswith("#")
+            ]
     entries = existing + new
     if len(entries) > MAX_COUNTEREXAMPLES:
         entries = entries[-MAX_COUNTEREXAMPLES:]
     with open(p, "w", encoding="utf-8") as fh:
-        fh.write("\n".join(headers or ["# 审查反例库(AI 味反例,机检动态合并)"]) + "\n\n")
+        fh.write(
+            "\n".join(headers or ["# 审查反例库(AI 味反例,机检动态合并)"]) + "\n\n"
+        )
         fh.write("\n".join(entries) + "\n")
     return len(new)
 
@@ -94,7 +105,9 @@ def harvest_quotes(root: str, ch: int) -> int:
             p = os.path.join(root, "定稿", "正文", f)
             break
     if p is None:
-        raise FileNotFoundError("缺第%d章正文: %s" % (ch, os.path.join(root, "定稿", "正文")))
+        raise FileNotFoundError(
+            "缺第%d章正文: %s" % (ch, os.path.join(root, "定稿", "正文"))
+        )
     cands = _quote_candidates(st.body(p))[:MAX_PER_CHAPTER]
     d = os.path.join(root, QUOTE_DIR)
     os.makedirs(d, exist_ok=True)
@@ -159,11 +172,13 @@ def trend(root: str, n: int = 10) -> List[Dict]:
     for ch in sorted(stats)[-n:]:
         p = _chapter_path(root, ch)
         s = stats[ch]
-        out.append({
-            "chapter": ch,
-            "dialogue_ratio": s["dialogue_ratio"],
-            "redline_hits": s["redline_hits"],
-            "avg_sentence_len": _avg_sentence_len(st.body(p)) if p else 0.0,
-            "words": s["hanzi"],
-        })
+        out.append(
+            {
+                "chapter": ch,
+                "dialogue_ratio": s["dialogue_ratio"],
+                "redline_hits": s["redline_hits"],
+                "avg_sentence_len": _avg_sentence_len(st.body(p)) if p else 0.0,
+                "words": s["hanzi"],
+            }
+        )
     return out

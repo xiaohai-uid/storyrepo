@@ -1,14 +1,14 @@
-# -*- coding: utf-8 -*-
 """tests/test_checks.py:collect_checks 十一项 + redlines 正则表。
 覆盖:正常路径 + 失败路径 + 边界(空书、缺文件、超长卡、缺状态、非法参数)。"""
+
 import os
 import re
 
 import pytest
+from conftest import add_chapter, make_book, write_file
 
 from storyrepo import state as st
 from storyrepo.checks import collect_checks, redlines
-from conftest import add_chapter, make_book, write_file
 
 
 def refresh(root):
@@ -19,6 +19,7 @@ def refresh(root):
         st.merge_chapter_facts(s, st.chapter_num(f), st.frontmatter(p))
     st.save_state(root, s)
     from storyrepo import views
+
     views.write_views(root, s)
 
 
@@ -38,13 +39,18 @@ class TestRedlines:
         assert len(rl) >= 4
         for pat, name in rl:
             assert isinstance(pat, str) and isinstance(name, str)
-            re.compile(pat)                      # 必须可编译
+            re.compile(pat)  # 必须可编译
         names = [n for _, n in rl]
         for want in ("章末总结体", "预告体", "万能比喻", "抽象升华"):
             assert want in names
         # 兼容 templates/doctor.py 既有红线(learn/report 复用同一张表)
         pats = [p for p, _ in rl]
-        for canon in (r"他终于明白", r"他不知道的是", r"无人入眠", r"像潮水般|如闪电般|仿佛春风"):
+        for canon in (
+            r"他终于明白",
+            r"他不知道的是",
+            r"无人入眠",
+            r"像潮水般|如闪电般|仿佛春风",
+        ):
             assert canon in pats
 
     def test_each_pattern_hits_its_sentence(self):
@@ -55,11 +61,18 @@ class TestRedlines:
             "抽象升华": "或许,这就是命运的安排。",
         }
         for cat, sentence in hits.items():
-            assert any(re.search(p, sentence) for p, n in redlines() if n.startswith(cat)), cat
+            assert any(
+                re.search(p, sentence) for p, n in redlines() if n.startswith(cat)
+            ), cat
 
     def test_doctor_patterns_hit(self):
-        cases = ("他终于明白了。", "这一夜注定不平静。", "他不知道的是,风雨将至。",
-                 "无人入眠。", "月光像潮水般涌来。")
+        cases = (
+            "他终于明白了。",
+            "这一夜注定不平静。",
+            "他不知道的是,风雨将至。",
+            "无人入眠。",
+            "月光像潮水般涌来。",
+        )
         for s in cases:
             assert any(re.search(p, s) for p, _ in redlines()), s
 
@@ -97,8 +110,8 @@ class TestWords:
         assert check_of(collect_checks(book), "字数窗口")["ok"]
 
     def test_boundaries_ok(self, book):
-        add_chapter(book, 1, prose=clean_prose(2600))    # 下限 min-400
-        add_chapter(book, 2, prose=clean_prose(4000))    # 上限 max+200
+        add_chapter(book, 1, prose=clean_prose(2600))  # 下限 min-400
+        add_chapter(book, 2, prose=clean_prose(4000))  # 上限 max+200
         assert check_of(collect_checks(book), "字数窗口")["ok"]
 
     def test_below_fails(self, book):
@@ -113,9 +126,12 @@ class TestWords:
 
     def test_custom_max_words(self, tmp_path):
         root = make_book(str(tmp_path / "b"))
-        write_file(root, "book.yaml",
-                   "---\nname: b\nmin_words_per_chapter: 3000\nmax_words_per_chapter: 5000\n---\n")
-        add_chapter(root, 1, prose=clean_prose(4001))    # 4001 <= 5000+200
+        write_file(
+            root,
+            "book.yaml",
+            "---\nname: b\nmin_words_per_chapter: 3000\nmax_words_per_chapter: 5000\n---\n",
+        )
+        add_chapter(root, 1, prose=clean_prose(4001))  # 4001 <= 5000+200
         assert check_of(collect_checks(root), "字数窗口")["ok"]
 
     def test_chapter_param(self, book):
@@ -180,7 +196,7 @@ class TestLeaks:
         add_chapter(book, 1, prose="第一章正文。", gaps_new="S-001")
         add_chapter(book, 2, prose="第二章正文。", gaps_revealed="S-001")
         refresh(book)
-        add_chapter(book, 3, prose="真相是 S-001。")   # 已曝光 → 允许
+        add_chapter(book, 3, prose="真相是 S-001。")  # 已曝光 → 允许
         assert check_of(collect_checks(book), "泄密扫描")["ok"]
 
     def test_chapter_param(self, book):
@@ -243,8 +259,12 @@ class TestRedlineCheck:
         assert not c["ok"] and "章末总结体" in c["detail"] and "片段" in c["detail"]
 
     def test_all_four_kinds_fail(self, book):
-        cases = ("本章讲述了主角的成长。", "下一章将揭晓真相。",
-                 "这场景仿佛一幅画卷。", "或许,这就是命运的安排。")
+        cases = (
+            "本章讲述了主角的成长。",
+            "下一章将揭晓真相。",
+            "这场景仿佛一幅画卷。",
+            "或许,这就是命运的安排。",
+        )
         for i, prose in enumerate(cases, 1):
             add_chapter(book, i, prose=prose)
         c = check_of(collect_checks(book), "AI红线")
@@ -257,7 +277,9 @@ class TestRedlineCheck:
 
 class TestRepeat:
     def test_adjacent_common5_fails(self, book):
-        add_chapter(book, 1, prose="今天天气真好,我们出发吧。\n\n今天天气真不错,继续前行。")
+        add_chapter(
+            book, 1, prose="今天天气真好,我们出发吧。\n\n今天天气真不错,继续前行。"
+        )
         c = check_of(collect_checks(book), "复读检测")
         assert not c["ok"] and "相邻" in c["detail"]
 
@@ -295,7 +317,9 @@ class TestContract:
         assert not c["ok"] and "禁区" in c["detail"]
 
     def test_both_fail(self, book):
-        add_chapter(book, 1, prose="赵三独自在河边。", must_cover="阿米", forbidden="赵三")
+        add_chapter(
+            book, 1, prose="赵三独自在河边。", must_cover="阿米", forbidden="赵三"
+        )
         c = check_of(collect_checks(book), "合同断言")
         assert not c["ok"] and "阿米" in c["detail"] and "赵三" in c["detail"]
 
@@ -313,7 +337,7 @@ class TestFresh:
     def test_stale_fails(self, book):
         add_chapter(book, 1, prose=clean_prose(3000))
         refresh(book)
-        add_chapter(book, 2, prose=clean_prose(3000))    # 状态未跟上
+        add_chapter(book, 2, prose=clean_prose(3000))  # 状态未跟上
         c = check_of(collect_checks(book), "追踪新鲜")
         assert not c["ok"] and "早于" in c["detail"]
 
@@ -325,7 +349,7 @@ class TestFresh:
     def test_prewrite_skips(self, book):
         add_chapter(book, 1, prose=clean_prose(3000))
         refresh(book)
-        add_chapter(book, 2, prose=clean_prose(3000))    # 状态过期,但 prewrite 不查
+        add_chapter(book, 2, prose=clean_prose(3000))  # 状态过期,但 prewrite 不查
         c = check_of(collect_checks(book, stage="prewrite"), "追踪新鲜")
         assert c["ok"] and "跳过" in c["detail"]
 

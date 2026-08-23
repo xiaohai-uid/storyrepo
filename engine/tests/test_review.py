@@ -1,13 +1,22 @@
-# -*- coding: utf-8 -*-
-import os, json
+import json
+import os
+
 import pytest
-from storyrepo import models, review as rv
+
+from storyrepo import models
+from storyrepo import review as rv
 
 
 def two_issues():
     return [
-        models.ReviewIssue("critical", "continuity", "第3段", "时间线冲突",
-                           evidence="原文引用", fix_hint="改为次日"),
+        models.ReviewIssue(
+            "critical",
+            "continuity",
+            "第3段",
+            "时间线冲突",
+            evidence="原文引用",
+            fix_hint="改为次日",
+        ),
         models.ReviewIssue("low", "pacing", "第5段", "节奏略拖", blocking=False),
     ]
 
@@ -97,7 +106,9 @@ class TestLoadReview:
 
 class TestHasBlocking:
     def test_critical_blocks(self):
-        assert rv.has_blocking([models.ReviewIssue("critical", "logic", "l", "d")]) is True
+        assert (
+            rv.has_blocking([models.ReviewIssue("critical", "logic", "l", "d")]) is True
+        )
 
     def test_nonblocking(self):
         assert rv.has_blocking([models.ReviewIssue("high", "logic", "l", "d")]) is False

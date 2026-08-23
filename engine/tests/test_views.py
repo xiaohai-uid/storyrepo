@@ -1,9 +1,11 @@
-# -*- coding: utf-8 -*-
 """模块 2 视图契约测试:card7 七栏/12KB 上限、write_views 全量重建、幂等与缺字段容错。"""
+
 import os
 
-from storyrepo import state as st, views
-from conftest import make_book, add_chapter, write_file
+from conftest import add_chapter, write_file
+
+from storyrepo import state as st
+from storyrepo import views
 
 
 def _merge(root, s, ch, summary=None):
@@ -14,18 +16,43 @@ def _merge(root, s, ch, summary=None):
 
 def _populated(root, n=3):
     """3 章标准书:2 伏笔、2 信息差、2 实体、私密/揭示事件各一。"""
-    add_chapter(root, 1, title="开局", prose="第一行。\n\n第二行。\n\n他笑了笑。",
-                promises_new="P-001, P-002", gaps_new="S-001", entities_new="阿米,米粒",
-                summary="阿米登场", must_cover="阿米,米粒", forbidden="赵三")
-    add_chapter(root, 2, title="夜行", prose="风声。\n\n——本章完——\n\n米粒出发了。",
-                promises_advanced="P-001", gaps_new="S-002", entities_new="米粒",
-                summary="米粒夜行")
-    add_chapter(root, 3, title="追兵", prose="马蹄声近。\n\n追兵到了。",
-                promises_done="P-002", gaps_revealed="S-001", summary="追兵围城")
+    add_chapter(
+        root,
+        1,
+        title="开局",
+        prose="第一行。\n\n第二行。\n\n他笑了笑。",
+        promises_new="P-001, P-002",
+        gaps_new="S-001",
+        entities_new="阿米,米粒",
+        summary="阿米登场",
+        must_cover="阿米,米粒",
+        forbidden="赵三",
+    )
+    add_chapter(
+        root,
+        2,
+        title="夜行",
+        prose="风声。\n\n——本章完——\n\n米粒出发了。",
+        promises_advanced="P-001",
+        gaps_new="S-002",
+        entities_new="米粒",
+        summary="米粒夜行",
+    )
+    add_chapter(
+        root,
+        3,
+        title="追兵",
+        prose="马蹄声近。\n\n追兵到了。",
+        promises_done="P-002",
+        gaps_revealed="S-001",
+        summary="追兵围城",
+    )
     s = st.load_state(root)
-    for n in range(1, n + 1):
-        _merge(root, s, n)
-    s["timeline"].append({"ch": 2, "event": "作者私注:米粒的真实身份", "kind": "private"})
+    for i in range(1, n + 1):
+        _merge(root, s, i)
+    s["timeline"].append(
+        {"ch": 2, "event": "作者私注:米粒的真实身份", "kind": "private"}
+    )
     s["timeline"].append({"ch": 3, "event": "追兵头领是故人", "kind": "reveal"})
     s["promises"]["P-001"]["note"] = "身世之谜"
     s["entity_states"]["阿米"]["where"] = "城门口"
@@ -40,20 +67,20 @@ class TestCard7:
         assert card.startswith("# 续写状态卡(7 栏)")
         idx = [card.find("## %d." % i) for i in range(1, 8)]
         assert all(i >= 0 for i in idx)
-        assert idx == sorted(idx)          # 7 栏固定顺序
+        assert idx == sorted(idx)  # 7 栏固定顺序
 
     def test_progress_numbers(self, book):
         root = _populated(book)
         card = views.card7(root, st.load_state(root))
         assert "最新章: 3 / 计划: 330" in card
-        assert "活跃承诺: 1" in card       # P-002 已回收
-        assert "未曝光信息差: 1" in card   # S-002 未曝光
+        assert "活跃承诺: 1" in card  # P-002 已回收
+        assert "未曝光信息差: 1" in card  # S-002 未曝光
 
     def test_promise_and_gap_lines(self, book):
         root = _populated(book)
         card = views.card7(root, st.load_state(root))
         assert "- P-001 身世之谜" in card
-        assert "- P-002" not in card.split("## 3. 活跃伏笔")[1]   # 已回收,不列
+        assert "- P-002" not in card.split("## 3. 活跃伏笔")[1]  # 已回收,不列
         assert "- S-002" in card
         assert "S-001" not in card.split("## 6. 未曝光信息差")[1]
 
@@ -61,12 +88,12 @@ class TestCard7:
         root = _populated(book)
         card = views.card7(root, st.load_state(root))
         assert "- 阿米: 首现第1章 城门口" in card
-        assert "- 米粒: 首现第1章" in card   # 无位置则不尾缀
+        assert "- 米粒: 首现第1章" in card  # 无位置则不尾缀
 
     def test_recent_endings_skip_banner_and_truncate(self, book):
         root = _populated(book)
         card = views.card7(root, st.load_state(root))
-        assert "- 第2章: 米粒出发了。" in card   # ——本章完—— 横幅被跳过
+        assert "- 第2章: 米粒出发了。" in card  # ——本章完—— 横幅被跳过
         assert "- 第3章: 追兵到了。" in card
         long_end = "句" * 300
         add_chapter(root, 4, prose="前段。\n\n" + long_end, summary="长尾章")
@@ -78,8 +105,11 @@ class TestCard7:
         assert "句" * 151 not in seg
 
     def test_next_contract_line(self, book):
-        write_file(book, "大纲/细纲蓝图.md",
-                   "# 细纲蓝图\n\n- [x] 第1章: 开局\n- [ ] 第2章: 米粒夜行,埋下 S-002\n- [ ] 第3章: 追兵\n")
+        write_file(
+            book,
+            "大纲/细纲蓝图.md",
+            "# 细纲蓝图\n\n- [x] 第1章: 开局\n- [ ] 第2章: 米粒夜行,埋下 S-002\n- [ ] 第3章: 追兵\n",
+        )
         card = views.card7(book, st.load_state(book))
         assert "米粒夜行,埋下 S-002" in card
         write_file(book, "大纲/细纲蓝图.md", "- [ ] %s\n" % ("长" * 300))
@@ -100,8 +130,12 @@ class TestCard7:
         assert "风格锚点" in card
 
     def test_active_promises_capped_at_10(self, book):
-        add_chapter(book, 1, prose="x",
-                    promises_new=",".join("P-%03d" % i for i in range(1, 13)))
+        add_chapter(
+            book,
+            1,
+            prose="x",
+            promises_new=",".join("P-%03d" % i for i in range(1, 13)),
+        )
         s = st.load_state(book)
         _merge(book, s, 1)
         card = views.card7(book, s)
@@ -109,12 +143,13 @@ class TestCard7:
         assert "- P-011" not in card and "- P-012" not in card
 
     def test_oversize_card_truncated_to_12kb(self, book):
-        add_chapter(book, 1, prose="x",
-                    promises_new=",".join("P-%03d" % i for i in range(10)))
+        add_chapter(
+            book, 1, prose="x", promises_new=",".join("P-%03d" % i for i in range(10))
+        )
         s = st.load_state(book)
         _merge(book, s, 1)
-        for pid, v in s["promises"].items():
-            v["note"] = "注" * 2000            # 10×6KB,必然超限
+        for v in s["promises"].values():
+            v["note"] = "注" * 2000  # 10×6KB,必然超限
         card = views.card7(book, s)
         assert len(card.encode("utf-8")) <= st.MAX_CARD_BYTES == 12288
 
@@ -123,7 +158,7 @@ class TestCard7:
         views.write_views(root, st.load_state(root))
         assert views.card_size_ok(root) is True
         with open(os.path.join(root, "追踪", "上下文.md"), "w", encoding="utf-8") as f:
-            f.write("大" * 6000)               # 18KB > 12KB
+            f.write("大" * 6000)  # 18KB > 12KB
         assert views.card_size_ok(root) is False
         os.remove(os.path.join(root, "追踪", "上下文.md"))
         assert views.card_size_ok(root) is False
@@ -134,9 +169,18 @@ class TestWriteViews:
         root = _populated(book)
         views.write_views(root, st.load_state(root))
         tk = os.path.join(root, "追踪")
-        for rel in ("上下文.md", "伏笔.md", "作者真相.md", "读者已知.md", "时间线.md",
-                    "角色状态/阿米.md", "角色状态/米粒.md",
-                    "逐章记录/ch001.md", "逐章记录/ch002.md", "逐章记录/ch003.md"):
+        for rel in (
+            "上下文.md",
+            "伏笔.md",
+            "作者真相.md",
+            "读者已知.md",
+            "时间线.md",
+            "角色状态/阿米.md",
+            "角色状态/米粒.md",
+            "逐章记录/ch001.md",
+            "逐章记录/ch002.md",
+            "逐章记录/ch003.md",
+        ):
             assert os.path.exists(os.path.join(tk, rel)), rel
 
     def test_context_equals_card7(self, book):
@@ -179,7 +223,9 @@ class TestWriteViews:
     def test_entity_files(self, book):
         root = _populated(book)
         views.write_views(root, st.load_state(root))
-        with open(os.path.join(root, "追踪", "角色状态", "阿米.md"), encoding="utf-8") as f:
+        with open(
+            os.path.join(root, "追踪", "角色状态", "阿米.md"), encoding="utf-8"
+        ) as f:
             t = f.read()
         assert "# 角色状态:阿米" in t
         assert "- 首现章: 1" in t
@@ -195,10 +241,19 @@ class TestWriteViews:
     def test_chapter_logs_six_fields(self, book):
         root = _populated(book)
         views.write_views(root, st.load_state(root))
-        with open(os.path.join(root, "追踪", "逐章记录", "ch001.md"), encoding="utf-8") as f:
+        with open(
+            os.path.join(root, "追踪", "逐章记录", "ch001.md"), encoding="utf-8"
+        ) as f:
             t = f.read()
         assert t.startswith("# 逐章记录:第1章《开局》")
-        for field in ("结果:", "角色变化:", "伏笔变化:", "时间与揭示:", "约束:", "下一章承诺:"):
+        for field in (
+            "结果:",
+            "角色变化:",
+            "伏笔变化:",
+            "时间与揭示:",
+            "约束:",
+            "下一章承诺:",
+        ):
             assert field in t, field
         assert "阿米登场" in t
         assert "首现:阿米(位置:城门口,状态:重伤)" in t
@@ -207,23 +262,28 @@ class TestWriteViews:
         assert "埋设:S-001" in t
         assert "必覆盖:阿米,米粒" in t and "禁区:赵三" in t
         assert "下一章承诺: P-001, P-002, S-001" in t
-        with open(os.path.join(root, "追踪", "逐章记录", "ch003.md"), encoding="utf-8") as f:
+        with open(
+            os.path.join(root, "追踪", "逐章记录", "ch003.md"), encoding="utf-8"
+        ) as f:
             t3 = f.read()
         assert "回收:P-002" in t3
         assert "揭示:S-001" in t3
         assert "揭示信息差:S-001" in t3
-        assert "追兵头领是故人" in t3          # reveal 事件入时间与揭示
+        assert "追兵头领是故人" in t3  # reveal 事件入时间与揭示
         assert "下一章承诺: 无" in t3
 
     def test_chapter_log_truncated_to_3072(self, book):
-        add_chapter(book, 1, prose="x",
-                    entities_new=",".join("角色%d" % i for i in range(80)))
+        add_chapter(
+            book, 1, prose="x", entities_new=",".join("角色%d" % i for i in range(80))
+        )
         s = st.load_state(book)
         _merge(book, s, 1)
         for i in range(80):
-            s["entity_states"]["角色%d" % i]["state"] = "状态" * 20   # 每行 >120B
+            s["entity_states"]["角色%d" % i]["state"] = "状态" * 20  # 每行 >120B
         views.write_views(book, s)
-        with open(os.path.join(book, "追踪", "逐章记录", "ch001.md"), encoding="utf-8") as f:
+        with open(
+            os.path.join(book, "追踪", "逐章记录", "ch001.md"), encoding="utf-8"
+        ) as f:
             t = f.read()
         assert len(t.encode("utf-8")) <= 3072
 
@@ -249,14 +309,14 @@ class TestWriteViews:
         views.write_views(root, st.load_state(root))
         with open(os.path.join(root, "追踪", "伏笔.md"), encoding="utf-8") as f:
             before = f.read()
-        views.write_views(root, st.load_state(root))   # 重复调用不炸
+        views.write_views(root, st.load_state(root))  # 重复调用不炸
         with open(os.path.join(root, "追踪", "伏笔.md"), encoding="utf-8") as f:
             assert f.read() == before
         assert views.card_size_ok(root) is True
 
     def test_missing_fields_tolerant(self, book):
         for s in ({}, {"spec": 1}, {"promises": {}, "timeline": [], "chapters": {}}):
-            views.write_views(book, s)               # 缺字段不炸
+            views.write_views(book, s)  # 缺字段不炸
             assert views.card_size_ok(book) is True
         card = views.card7(book, {})
         assert "最新章: 0" in card

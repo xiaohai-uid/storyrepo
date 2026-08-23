@@ -1,8 +1,10 @@
-# -*- coding: utf-8 -*-
 """评审落库:JSON 读写 / blocking 门禁 / 人类可读报告。
 机制来源:webnovel-writer review-schema(子代理 JSON 协议 + 门禁;blocking 定点修复,不重跑评审)。"""
-import os, json
+
+import json
+import os
 from typing import List, Tuple
+
 from storyrepo import models
 
 REVIEW_DIR = os.path.join("工作区", "评审报告")
@@ -75,15 +77,25 @@ def write_report(root: str, ch: int, issues: List[models.ReviewIssue]) -> str:
     p = report_path(root, ch)
     os.makedirs(os.path.dirname(p), exist_ok=True)
     blocking_count = sum(1 for i in issues if i.blocking)
-    L = ["# 第%d章 审查报告" % ch, "",
-         "- 问题数: %d,其中 blocking: %d" % (len(issues), blocking_count),
-         "- 结论: %s" % ("有 blocking,未放行,先定点修复" if blocking_count else "无 blocking,可进入润色/结算"),
-         ""]
+    L = [
+        "# 第%d章 审查报告" % ch,
+        "",
+        "- 问题数: %d,其中 blocking: %d" % (len(issues), blocking_count),
+        "- 结论: %s"
+        % (
+            "有 blocking,未放行,先定点修复"
+            if blocking_count
+            else "无 blocking,可进入润色/结算"
+        ),
+        "",
+    ]
     if not issues:
         L.append("未发现问题。")
     for idx, i in enumerate(issues, 1):
         tag = "⛔ blocking" if i.blocking else "非 blocking"
-        L.append("### %d. [%s/%s] %s(%s)" % (idx, i.severity, i.category, tag, i.location))
+        L.append(
+            "### %d. [%s/%s] %s(%s)" % (idx, i.severity, i.category, tag, i.location)
+        )
         L.append("- 问题: %s" % i.description)
         if i.evidence:
             L.append("- 证据: %s" % i.evidence)

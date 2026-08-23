@@ -1,17 +1,16 @@
-# -*- coding: utf-8 -*-
 """模块 3:五段式章节写作任务书(brief.py)。
 来源:context-agent 输出格式。build_brief 组装五段任务书:
 ①开篇委托 ②这章的故事 ③这章的人物 ④怎么写更顺 ⑤收在哪里。
 无 contract/context 时内部调用 build_contract + assemble_context。
 规则:纯标准库、UTF-8、输出中文、只读不写;缺文件容错。"""
+
 import os
 import re
 from typing import Dict, List, Optional, Tuple
 
 from storyrepo import config
-from storyrepo import state as st
-from storyrepo.contract import build_contract, load_outline
 from storyrepo.context import assemble_context
+from storyrepo.contract import build_contract, load_outline
 
 STYLE_REL = os.path.join("文风", "风格宪法.md")
 STYLE_LIMIT = 200
@@ -42,13 +41,15 @@ def _split_entry(entry: str) -> Tuple[str, str]:
     """解析 "【名】内容" 实体卡条目。"""
     m = re.match(r"^【(.+?)】", entry)
     if m:
-        return m.group(1), entry[m.end():]
+        return m.group(1), entry[m.end() :]
     return entry, ""
 
 
 def _distill(name: str, excerpt: str) -> str:
     """从角色卡首 400 字提炼状态/驱动/作用/说话倾向;无关键词行则给原文。"""
-    lines = [l.strip() for l in excerpt.splitlines() if any(k in l for k in DISTILL_KEYS)]
+    lines = [
+        ln.strip() for ln in excerpt.splitlines() if any(k in ln for k in DISTILL_KEYS)
+    ]
     if lines:
         return "%s: %s" % (name, "；".join(lines[:6]))
     return "%s: %s" % (name, excerpt[:400])
@@ -61,8 +62,13 @@ def _section(lines: List[str], title: str, items: List[str]) -> None:
     lines.append("")
 
 
-def build_brief(root: str, state: Dict, ch: int,
-                contract: Optional[Dict] = None, context: Optional[Dict] = None) -> str:
+def build_brief(
+    root: str,
+    state: Dict,
+    ch: int,
+    contract: Optional[Dict] = None,
+    context: Optional[Dict] = None,
+) -> str:
     """五段任务书。contract/context 可显式传入(便于流水线复用),缺省内部装配。"""
     c = contract if contract is not None else build_contract(root, state, ch)
     ctx = context if context is not None else assemble_context(root, state, ch)
@@ -83,12 +89,16 @@ def build_brief(root: str, state: Dict, ch: int,
     lines.append("# 第%d章 写作任务书(%s)" % (ch, book))
     lines.append("")
 
-    _section(lines, "一、开篇委托", [
-        "- 书名:%s" % book,
-        "- 章号:%d" % ch,
-        "- 标题:%s" % title,
-        "- 一句话目标:%s" % goal,
-    ])
+    _section(
+        lines,
+        "一、开篇委托",
+        [
+            "- 书名:%s" % book,
+            "- 章号:%d" % ch,
+            "- 标题:%s" % title,
+            "- 一句话目标:%s" % goal,
+        ],
+    )
 
     items2 = [
         "- 前文摘要:%s" % (chain or "暂无前文摘要"),
@@ -108,10 +118,14 @@ def build_brief(root: str, state: Dict, ch: int,
         items3 = ["- 无(未登记角色)"]
     _section(lines, "三、这章的人物", items3)
 
-    _section(lines, "四、怎么写更顺", [
-        "- 风格宪法(前 %d 字):%s" % (STYLE_LIMIT, _style_head(root)),
-        "- 结尾埋伏笔要求:%s" % (ending or "无明确要求"),
-    ])
+    _section(
+        lines,
+        "四、怎么写更顺",
+        [
+            "- 风格宪法(前 %d 字):%s" % (STYLE_LIMIT, _style_head(root)),
+            "- 结尾埋伏笔要求:%s" % (ending or "无明确要求"),
+        ],
+    )
 
     items5 = ["- 结尾要求:%s" % (ending or "无明确要求")]
     if prev_ending:

@@ -1,14 +1,15 @@
-# -*- coding: utf-8 -*-
 """机检(机器检查):collect_checks 十一项检查 + AI 红线正则表。
 机制来源:webnovel-writer review 机检清单 / oh-story 机检(自研轻量实现)。
 约定:纯标准库、UTF-8、函数带 root: str;错误 raise FileNotFoundError/ValueError + 中文提示。
 collect_checks 始终返回全部 11 项 check(不过滤 stage),由 gates.gate 决定只看哪些。"""
+
 import os
 import re
 from collections import Counter
 from typing import Dict, List, Optional, Tuple
 
-from storyrepo import config, state as st
+from storyrepo import config
+from storyrepo import state as st
 
 STAGES = ("prewrite", "precommit", "postcommit")
 
@@ -18,12 +19,21 @@ REDLINES = [
     (r"他终于明白", "章末总结体·终于明白"),
     (r"这一夜[^。]*注定", "章末总结体·这一夜注定"),
     (r"无人入眠", "章末总结体·无人入眠"),
-    (r"(?:本章|这一章|本章节|这一回).{0,12}(?:讲述|讲了|写到|写了|展现|描写)", "章末总结体"),
+    (
+        r"(?:本章|这一章|本章节|这一回).{0,12}(?:讲述|讲了|写到|写了|展现|描写)",
+        "章末总结体",
+    ),
     (r"他不知道的是", "预告体"),
     (r"(?:下一章|下一回|且听下回分解|欲知后事|敬请期待|未完待续)", "预告体"),
     (r"像潮水般|如闪电般|仿佛春风", "万能比喻"),
-    (r"(?:宛如|犹如|恰如|仿佛)(?:一幅|一场|一首)?(?:画卷|史诗|乐章|诗篇|梦境)", "万能比喻"),
-    (r"(?:或许|也许|可能).{0,4}(?:这|那)?就?是(?:人生|命运|生活|成长|一切)", "抽象升华"),
+    (
+        r"(?:宛如|犹如|恰如|仿佛)(?:一幅|一场|一首)?(?:画卷|史诗|乐章|诗篇|梦境)",
+        "万能比喻",
+    ),
+    (
+        r"(?:或许|也许|可能).{0,4}(?:这|那)?就?是(?:人生|命运|生活|成长|一切)",
+        "抽象升华",
+    ),
 ]
 
 _PLACEHOLDER = re.compile(r"TODO|占位|待补|待写|XXX|\{[A-Za-z_]+\}")
@@ -107,6 +117,7 @@ def _check_words(root: str, chapter, stage: str) -> Tuple[bool, str]:
 
 def _check_placeholder(root: str, chapter, stage: str) -> Tuple[bool, str]:
     """3. 占位符:正文含 TODO|占位|待补|待写|XXX|{标识} → fail。"""
+
     def fn(n, p):
         m = _PLACEHOLDER.search(st.body(p))
         if m:
@@ -123,7 +134,11 @@ def _check_leaks(root: str, chapter, stage: str) -> Tuple[bool, str]:
         s = st.load_state(root)
     except (FileNotFoundError, ValueError) as e:
         return False, "缺追踪状态,无法扫描泄密(%s)" % e
-    gaps = [(g, v.get("plant_ch", 1) or 1) for g, v in s.get("info_gaps", {}).items() if not v.get("revealed")]
+    gaps = [
+        (g, v.get("plant_ch", 1) or 1)
+        for g, v in s.get("info_gaps", {}).items()
+        if not v.get("revealed")
+    ]
     if not gaps:
         return True, "无未曝光信息差"
     targets = _target_chapters(root, chapter)
@@ -150,7 +165,10 @@ def _check_entities(root: str, chapter, stage: str) -> Tuple[bool, str]:
         if not ents:
             return True, "第%d章 无新实体" % n
         if not os.path.exists(roster):
-            return False, "第%d章 实体 %s 未登记(缺 定稿/设定/名册.md)" % (n, "、".join(ents))
+            return False, "第%d章 实体 %s 未登记(缺 定稿/设定/名册.md)" % (
+                n,
+                "、".join(ents),
+            )
         with open(roster, encoding="utf-8") as f:
             content = f.read()
         missing = [e for e in ents if e not in content]
@@ -163,6 +181,7 @@ def _check_entities(root: str, chapter, stage: str) -> Tuple[bool, str]:
 
 def _check_files(root: str, chapter, stage: str) -> Tuple[bool, str]:
     """6. 每章 front matter 存在 + 定稿/记忆/章摘要/{NNN}.md 存在。"""
+
     def fn(n, p):
         if not st.frontmatter(p):
             return False, "第%d章 缺 front matter" % n
@@ -176,12 +195,17 @@ def _check_files(root: str, chapter, stage: str) -> Tuple[bool, str]:
 
 def _check_redlines(root: str, chapter, stage: str) -> Tuple[bool, str]:
     """7. AI 红线:redlines() 每 pattern 扫 st.body,命中 → fail(注明位置片段)。"""
+
     def fn(n, p):
         body = st.body(p)
         for pat, name in redlines(root):
             m = re.search(pat, body)
             if m:
-                return False, "第%d章 红线「%s」命中: 片段 %s" % (n, name, _snippet(body, m.start(), m.end()))
+                return False, "第%d章 红线「%s」命中: 片段 %s" % (
+                    n,
+                    name,
+                    _snippet(body, m.start(), m.end()),
+                )
         return True, "第%d章 无红线命中" % n
 
     return _per_chapter(root, chapter, fn)
@@ -189,7 +213,7 @@ def _check_redlines(root: str, chapter, stage: str) -> Tuple[bool, str]:
 
 def _in_quotes(text: str, frag: str) -> bool:
     """frag 是否完全位于一对中文引号/直引号内。"""
-    for open_, close_ in (('"', '"'), ('“', '”'), ('「', '」')):
+    for open_, close_ in (('"', '"'), ("“", "”"), ("「", "」")):
         depth = 0
         i = 0
         while i < len(text):
@@ -211,9 +235,9 @@ def _common5(a: str, b: str) -> Optional[str]:
         return None
     if len(a) > len(b):
         a, b = b, a
-    grams = {b[i:i + 5] for i in range(len(b) - 4)}
+    grams = {b[i : i + 5] for i in range(len(b) - 4)}
     for i in range(len(a) - 4):
-        g = a[i:i + 5]
+        g = a[i : i + 5]
         if g in grams:
             if _in_quotes(a, g) and _in_quotes(b, g):
                 continue
@@ -223,6 +247,7 @@ def _common5(a: str, b: str) -> Optional[str]:
 
 def _check_repeat(root: str, chapter, stage: str) -> Tuple[bool, str]:
     """8. 复读检测:相邻两段 ≥5 字公共子串(去空白)→ fail;或同一 4-gram ≥6 次 → fail。"""
+
     def fn(n, p):
         body = st.body(p)
         paras = ["".join(seg.split()) for seg in body.split("\n\n") if seg.strip()]
@@ -232,12 +257,22 @@ def _check_repeat(root: str, chapter, stage: str) -> Tuple[bool, str]:
                 return False, "第%d章 相邻段落存在重复片段「%s」" % (n, g)
         flat = "".join(paras)
         if len(flat) >= 4:
-            cnt = Counter(flat[i:i + 4] for i in range(len(flat) - 3))
+            cnt = Counter(flat[i : i + 4] for i in range(len(flat) - 3))
             # 过滤句首/句末名句式误报:4-gram 含句读标点(如「。陆沉舟」)是正常句式,不计复读
             PUNC = "。！？；，、”」)}"
-            cnt = {g: k for g, k in cnt.items() if g[-1] not in PUNC and g[0] not in PUNC}
+            cnt = {
+                g: k for g, k in cnt.items() if g[-1] not in PUNC and g[0] not in PUNC
+            }
             # 过滤对话归属误报:含引号的 4-gram(如「"陆沉舟」)是角色对白属性,不计复读
-            cnt = {g: k for g, k in cnt.items() if '"' not in g and '“' not in g and '”' not in g and '「' not in g and '」' not in g}
+            cnt = {
+                g: k
+                for g, k in cnt.items()
+                if '"' not in g
+                and "“" not in g
+                and "”" not in g
+                and "「" not in g
+                and "」" not in g
+            }
             if cnt:
                 g, k = max(cnt.items(), key=lambda t: t[1])
                 if k >= 6:
@@ -249,6 +284,7 @@ def _check_repeat(root: str, chapter, stage: str) -> Tuple[bool, str]:
 
 def _check_contract(root: str, chapter, stage: str) -> Tuple[bool, str]:
     """9. 合同断言:must_cover 词正文须全部包含;forbidden 词正文不得含。"""
+
     def fn(n, p):
         fm = st.frontmatter(p)
         body = st.body(p)
@@ -287,7 +323,11 @@ def _check_fresh(root: str, chapter, stage: str) -> Tuple[bool, str]:
         return False, "缺状态卡 %s" % os.path.relpath(card, root)
     size = os.path.getsize(card)
     if size > st.MAX_CARD_BYTES:
-        return False, "状态卡 %s %d 字节,超过上限 %d" % (os.path.relpath(card, root), size, st.MAX_CARD_BYTES)
+        return False, "状态卡 %s %d 字节,超过上限 %d" % (
+            os.path.relpath(card, root),
+            size,
+            st.MAX_CARD_BYTES,
+        )
     # L4:状态卡必须不早于状态文件(commit 在 save 与 views 之间崩溃会留下“状态新、卡旧”中间态)
     if os.path.getmtime(card) < os.path.getmtime(sp):
         return False, "状态卡早于状态文件(派生视图未重建,重跑 commit 或 views 重建)"
@@ -296,6 +336,7 @@ def _check_fresh(root: str, chapter, stage: str) -> Tuple[bool, str]:
 
 def _check_summary(root: str, chapter, stage: str) -> Tuple[bool, str]:
     """11. 占位符之外:章节 front matter summary 非空。"""
+
     def fn(n, p):
         fm = st.frontmatter(p)
         s = str(fm.get("summary", "") or "").strip()
@@ -334,7 +375,7 @@ def collect_checks(root: str, stage: str = "precommit", chapter=None) -> List[Di
         try:
             chapter = int(chapter)
         except (TypeError, ValueError):
-            raise ValueError("chapter 非法: %r" % (chapter,))
+            raise ValueError("chapter 非法: %r" % (chapter,)) from None
     out = []
     for name, fn in _CHECKS:
         ok, detail = fn(root, chapter, stage)

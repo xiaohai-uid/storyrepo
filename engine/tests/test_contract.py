@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
 import os
-import pytest
+
+from conftest import add_chapter
+
 from storyrepo import state as st
 from storyrepo.contract import build_contract, load_outline
-from conftest import add_chapter
 
 OUTLINE = """# 细纲蓝图
 
@@ -23,56 +23,71 @@ def merged_state(book, *chs):
     s = st.load_state(book)
     for n in chs:
         f = [x for x in st.chapter_files(book) if st.chapter_num(x) == n][0]
-        st.merge_chapter_facts(s, n, st.frontmatter(os.path.join(book, "定稿", "正文", f)))
+        st.merge_chapter_facts(
+            s, n, st.frontmatter(os.path.join(book, "定稿", "正文", f))
+        )
     return s
 
 
 class TestBuildContract:
     def test_normal(self, book):
-        add_chapter(book, 1, prose="甲", promises_new="P-001, P-002, P-004",
-                    gaps_new="S-001, S-002", entities_new="阿米")
+        add_chapter(
+            book,
+            1,
+            prose="甲",
+            promises_new="P-001, P-002, P-004",
+            gaps_new="S-001, S-002",
+            entities_new="阿米",
+        )
         add_chapter(book, 2, prose="乙", promises_done="P-004", gaps_revealed="S-002")
         add_chapter(book, 3, prose="丙", promises_new="P-003")
         write_outline(book, OUTLINE)
         s = merged_state(book, 1, 2, 3)
-        s["promises"]["P-001"]["note"] = "结尾回收"          # note 非空 → 入选
+        s["promises"]["P-001"]["note"] = "结尾回收"  # note 非空 → 入选
         # P-002: adv_ch=1,距 ch=4 为 3 → 入选;P-003: adv_ch=3,距 1 → 排除;P-004 done → 排除
 
         c = build_contract(book, s, 4)
         assert c["goal"] == "夜探城主府"
         assert c["hard_constraints"] == ["不写血腥"]
-        assert c["forbidden"] == ["S-001", "孙五"]           # 未曝光信息差 + 禁区列
+        assert c["forbidden"] == ["S-001", "孙五"]  # 未曝光信息差 + 禁区列
         assert c["foreshadow_todo"] == ["P-001", "P-002"]
-        assert c["ending_requirement"] == "老者的伤"          # ch+1 行 suspense/foreshadow/twist 合并
+        assert (
+            c["ending_requirement"] == "老者的伤"
+        )  # ch+1 行 suspense/foreshadow/twist 合并
         assert c["sources"]["细纲蓝图"].endswith(os.path.join("大纲", "细纲蓝图.md"))
         assert c["sources"]["追踪状态"].endswith("_tracking-state.json")
         assert "总纲" not in c["sources"]
 
     def test_ending_merges_multiple_cells(self, book):
-        write_outline(book, "1|开局|目标1|约束1|禁区1|角色1|悬念1|伏笔1|反转1\n"
-                            "2|二章|目标2||| |悬念2||反转2\n")
+        write_outline(
+            book,
+            "1|开局|目标1|约束1|禁区1|角色1|悬念1|伏笔1|反转1\n"
+            "2|二章|目标2||| |悬念2||反转2\n",
+        )
         c = build_contract(book, st.load_state(book), 1)
         assert c["ending_requirement"] == "悬念2；反转2"
         assert c["hard_constraints"] == ["约束1"]
         assert c["forbidden"] == ["禁区1"]
 
     def test_headerless_simple_rows(self, book):
-        write_outline(book, "1|开局|主角开局|字数3000|赵三|阿米|悬念A|伏笔B|反转C\n"
-                            "2|惊变||||||||\n")
+        write_outline(
+            book,
+            "1|开局|主角开局|字数3000|赵三|阿米|悬念A|伏笔B|反转C\n2|惊变||||||||\n",
+        )
         c = build_contract(book, st.load_state(book), 1)
         assert c["goal"] == "主角开局"
         assert c["hard_constraints"] == ["字数3000"]
         assert c["forbidden"] == ["赵三"]
-        assert c["ending_requirement"] == ""                  # ch+1 行无 suspense/foreshadow/twist
+        assert c["ending_requirement"] == ""  # ch+1 行无 suspense/foreshadow/twist
 
     def test_no_outline_placeholder(self, book):
         add_chapter(book, 1, prose="甲", gaps_new="S-001")
         s = merged_state(book, 1)
-        c = build_contract(book, s, 2)                        # 无细纲文件,不抛错
+        c = build_contract(book, s, 2)  # 无细纲文件,不抛错
         assert c["goal"] == "(无细纲,依 大纲/总纲.md 一句话)"
         assert c["hard_constraints"] == []
         assert c["ending_requirement"] == ""
-        assert c["forbidden"] == ["S-001"]                    # 信息差照常
+        assert c["forbidden"] == ["S-001"]  # 信息差照常
         assert c["sources"]["总纲"].endswith(os.path.join("大纲", "总纲.md"))
         assert "细纲蓝图" not in c["sources"]
 
@@ -85,11 +100,20 @@ class TestBuildContract:
         assert c["forbidden"] == ["S-001"]
 
     def test_foreshadow_todo_limit_and_gaps(self, book):
-        add_chapter(book, 1, prose="甲", promises_new="P-001, P-002, P-003, P-004, P-005, P-006")
-        s = merged_state(book, 1)                             # 全部 adv_ch=1,距 ch=4 均 ≥3
+        add_chapter(
+            book, 1, prose="甲", promises_new="P-001, P-002, P-003, P-004, P-005, P-006"
+        )
+        s = merged_state(book, 1)  # 全部 adv_ch=1,距 ch=4 均 ≥3
         c = build_contract(book, s, 4)
-        assert len(c["foreshadow_todo"]) == 5                 # ≤5 条
-        assert set(c["foreshadow_todo"]) <= {"P-001", "P-002", "P-003", "P-004", "P-005", "P-006"}
+        assert len(c["foreshadow_todo"]) == 5  # ≤5 条
+        assert set(c["foreshadow_todo"]) <= {
+            "P-001",
+            "P-002",
+            "P-003",
+            "P-004",
+            "P-005",
+            "P-006",
+        }
 
 
 class TestLoadOutline:
@@ -103,11 +127,14 @@ class TestLoadOutline:
         assert rows[0]["goal"] == "目标1"
 
     def test_ignores_non_table_lines(self, book):
-        write_outline(book, "# 标题行\n\n说明文字\n| ch | 要发生什么 |\n|---|---|\n| 1 | 目标 |\n")
+        write_outline(
+            book, "# 标题行\n\n说明文字\n| ch | 要发生什么 |\n|---|---|\n| 1 | 目标 |\n"
+        )
         rows = load_outline(book)
         assert len(rows) == 1 and rows[0]["goal"] == "目标"
 
 
 def write_outline(book, content):
     from conftest import write_file
+
     write_file(book, "大纲/细纲蓝图.md", content)

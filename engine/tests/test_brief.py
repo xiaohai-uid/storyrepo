@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
 import os
-import pytest
+
+from conftest import add_chapter, write_file
+
 from storyrepo import state as st
 from storyrepo.brief import build_brief
-from conftest import add_chapter, write_file
 
 OUTLINE = """# 细纲蓝图
 
@@ -22,28 +22,48 @@ def merged_state(book, *chs):
     s = st.load_state(book)
     for n in chs:
         f = [x for x in st.chapter_files(book) if st.chapter_num(x) == n][0]
-        st.merge_chapter_facts(s, n, st.frontmatter(os.path.join(book, "定稿", "正文", f)))
+        st.merge_chapter_facts(
+            s, n, st.frontmatter(os.path.join(book, "定稿", "正文", f))
+        )
     return s
 
 
 class TestBuildBrief:
     def test_normal_five_sections(self, book):
-        add_chapter(book, 1, prose="第一章第一段。\n\n第一章结尾段。", summary="摘要一",
-                    gaps_new="S-001")
+        add_chapter(
+            book,
+            1,
+            prose="第一章第一段。\n\n第一章结尾段。",
+            summary="摘要一",
+            gaps_new="S-001",
+        )
         add_chapter(book, 2, prose="第二章内容。\n\n第二章结尾段。", summary="摘要二")
-        add_chapter(book, 3, prose="第三章内容。\n\n第三章结尾段。\n\n——本章完——", summary="摘要三")
+        add_chapter(
+            book,
+            3,
+            prose="第三章内容。\n\n第三章结尾段。\n\n——本章完——",
+            summary="摘要三",
+        )
         write_file(book, "大纲/细纲蓝图.md", OUTLINE)
-        write_file(book, "定稿/设定/角色/阿米.md",
-                   "阿米是隐世剑客。\n状态:重伤未愈。\n驱动:为师父复仇。\n"
-                   "作用:主角的助力。\n说话倾向:寡言。\n")
+        write_file(
+            book,
+            "定稿/设定/角色/阿米.md",
+            "阿米是隐世剑客。\n状态:重伤未愈。\n驱动:为师父复仇。\n"
+            "作用:主角的助力。\n说话倾向:寡言。\n",
+        )
         write_file(book, "定稿/设定/角色/米粒.md", "米粒,神秘少女。")
         write_file(book, "文风/风格宪法.md", "简洁有力,短句为主,少用成语。")
 
         b = build_brief(book, merged_state(book, 1, 2, 3), 4)
         assert b.startswith("# 第4章 写作任务书(测试书)")
         # 五段齐全
-        for sec in ("一、开篇委托", "二、这章的故事", "三、这章的人物",
-                    "四、怎么写更顺", "五、收在哪里"):
+        for sec in (
+            "一、开篇委托",
+            "二、这章的故事",
+            "三、这章的人物",
+            "四、怎么写更顺",
+            "五、收在哪里",
+        ):
             assert sec in b
         # ① 开篇委托
         assert "书名:测试书" in b
@@ -66,11 +86,21 @@ class TestBuildBrief:
         assert "尚无上章" not in b
 
     def test_explicit_contract_and_context(self, book):
-        c = {"goal": "定制目标", "hard_constraints": ["约束A"], "forbidden": ["禁B"],
-             "foreshadow_todo": ["P-001"], "ending_requirement": "结尾埋伏笔X", "sources": {}}
-        ctx = {"recent_endings": ["上章结尾语"], "summary_chain": "定制摘要",
-               "entity_cards": ["【阿米】状态:冷静"], "next_chapter_injection": "注入Y",
-               "budget_kb": 1.0}
+        c = {
+            "goal": "定制目标",
+            "hard_constraints": ["约束A"],
+            "forbidden": ["禁B"],
+            "foreshadow_todo": ["P-001"],
+            "ending_requirement": "结尾埋伏笔X",
+            "sources": {},
+        }
+        ctx = {
+            "recent_endings": ["上章结尾语"],
+            "summary_chain": "定制摘要",
+            "entity_cards": ["【阿米】状态:冷静"],
+            "next_chapter_injection": "注入Y",
+            "budget_kb": 1.0,
+        }
         b = build_brief(book, st.load_state(book), 3, contract=c, context=ctx)
         assert "定制目标" in b and "约束A" in b and "禁B" in b
         assert "结尾埋伏笔X" in b
@@ -86,7 +116,7 @@ class TestBuildBrief:
         assert "(无细纲,依 大纲/总纲.md 一句话)" in b
         assert "暂无前文摘要" in b
         assert "尚无上章(本书开篇)" in b
-        assert "角色卡缺失" in b                              # 无角色卡 → 占位提示
+        assert "角色卡缺失" in b  # 无角色卡 → 占位提示
         assert "标题:第1章" in b
 
     def test_outline_row_missing_placeholder(self, book):

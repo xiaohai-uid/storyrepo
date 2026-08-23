@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """模块 3:写作上下文装配(context.py)。
 assemble_context 汇总四路上下文(recent_endings / summary_chain / entity_cards /
 next_chapter_injection)+ budget_kb;budget_check 判四路合计 ≤ 8KB。
@@ -6,6 +5,7 @@ next_chapter_injection)+ budget_kb;budget_check 判四路合计 ≤ 8KB。
 规则:纯标准库、UTF-8、只读不写;缺文件容错(跳过/占位)。
 预算口径:按 len(s.encode("utf-8")) 估算字节(中文 1 字 ≈ 3 字节),
 四路合计 > 8KB 视为超预算(各路上限 800/1000/400/150 字是软上限,预算为最终硬闸)。"""
+
 import os
 import re
 from typing import Dict, List
@@ -16,13 +16,13 @@ from storyrepo.contract import load_outline, split_list
 BANNER_RE = re.compile(r"^[—–-]{2,}")
 BUDGET_BYTES = 8 * 1024
 
-ENDINGS_COUNT = 3       # 最近 3 章
-END_LIMIT = 800         # 末段 ≤800 字
-SUMMARY_COUNT = 5       # 最近 5 篇章摘要
-SUMMARY_LIMIT = 1000    # 拼接 ≤1000 字
-CARD_COUNT = 3          # 实体卡 ≤3 张
-CARD_LIMIT = 400        # 每张前 400 字
-INJECT_LIMIT = 150      # 下章注入 ≤150 字
+ENDINGS_COUNT = 3  # 最近 3 章
+END_LIMIT = 800  # 末段 ≤800 字
+SUMMARY_COUNT = 5  # 最近 5 篇章摘要
+SUMMARY_LIMIT = 1000  # 拼接 ≤1000 字
+CARD_COUNT = 3  # 实体卡 ≤3 张
+CARD_LIMIT = 400  # 每张前 400 字
+INJECT_LIMIT = 150  # 下章注入 ≤150 字
 
 CARD_DIR = os.path.join("定稿", "设定", "角色")
 SUMMARY_DIR = os.path.join("定稿", "记忆", "章摘要")
@@ -68,7 +68,7 @@ def _summary_chain(root: str, ch: int) -> str:
             continue
         with open(p, encoding="utf-8") as f:
             t = f.read()
-        body = "\n".join(l for l in t.splitlines() if not l.strip().startswith("#"))
+        body = "\n".join(ln for ln in t.splitlines() if not ln.strip().startswith("#"))
         if body.strip():
             parts.append(body.strip())
     return "\n".join(parts)[:SUMMARY_LIMIT]
@@ -99,7 +99,10 @@ def _next_injection(root: str, ch: int) -> str:
     row = next((r for r in load_outline(root) if r["ch"] == ch + 1), None)
     if not row:
         return ""
-    parts = [str(row.get(k) or "").strip() for k in ("goal", "suspense", "foreshadow", "twist")]
+    parts = [
+        str(row.get(k) or "").strip()
+        for k in ("goal", "suspense", "foreshadow", "twist")
+    ]
     return "；".join(x for x in parts if x)[:INJECT_LIMIT]
 
 

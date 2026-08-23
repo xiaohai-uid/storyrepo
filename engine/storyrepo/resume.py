@@ -1,9 +1,10 @@
-# -*- coding: utf-8 -*-
 """断点续跑:诊断单章进度,给出恢复契约建议(只建议,不覆盖)。
 机制来源:webnovel-writer 恢复契约(每章查断点/失败只补跑失败步骤)。"""
+
 import os
-from storyrepo import state as st
+
 from storyrepo import review as rv
+from storyrepo import state as st
 
 
 def _chapter_path(root: str, ch: int):
@@ -32,9 +33,16 @@ def diagnose(root: str, ch=None) -> dict:
     files = st.chapter_files(root)
     if files:
         card_p = os.path.join(st.tracking_path(root), "上下文.md")
-        newest = max(os.path.getmtime(os.path.join(root, "定稿", "正文", f)) for f in files)
+        newest = max(
+            os.path.getmtime(os.path.join(root, "定稿", "正文", f)) for f in files
+        )
         card_ok = os.path.exists(card_p) and os.path.getmtime(card_p) >= newest
-    fm = {"正文": body_ok, "评审报告": review_ok, "追踪已合并": tracked_ok, "状态卡新鲜": card_ok}
+    fm = {
+        "正文": body_ok,
+        "评审报告": review_ok,
+        "追踪已合并": tracked_ok,
+        "状态卡新鲜": card_ok,
+    }
 
     if not body_ok:
         if review_ok:
@@ -42,7 +50,9 @@ def diagnose(root: str, ch=None) -> dict:
             step = "异常:第%d章有评审报告但无正文,请人工核查,勿直接续写覆盖" % target
         else:
             status = "not_started"
-            step = "第%d章尚未动笔:先跑机检 prewrite,再按 合同→任务书→起草 推进" % target
+            step = (
+                "第%d章尚未动笔:先跑机检 prewrite,再按 合同→任务书→起草 推进" % target
+            )
     else:
         corrupt = blocking = False
         if review_ok:

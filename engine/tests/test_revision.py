@@ -1,20 +1,27 @@
-# -*- coding: utf-8 -*-
 import os
+
 from conftest import add_chapter
-from storyrepo import state as st
+
 from storyrepo import revision as rev
+from storyrepo import state as st
 
 
 def merge_all(root, s):
     for f in st.chapter_files(root):
         n = st.chapter_num(f)
-        st.merge_chapter_facts(s, n, st.frontmatter(os.path.join(root, "定稿", "正文", f)))
+        st.merge_chapter_facts(
+            s, n, st.frontmatter(os.path.join(root, "定稿", "正文", f))
+        )
     return s
 
 
 def chapter_path(root, n):
-    return os.path.join(root, "定稿", "正文",
-                        [f for f in st.chapter_files(root) if st.chapter_num(f) == n][0])
+    return os.path.join(
+        root,
+        "定稿",
+        "正文",
+        [f for f in st.chapter_files(root) if st.chapter_num(f) == n][0],
+    )
 
 
 def rewrite_fm(root, n, drop_keys):
@@ -33,7 +40,7 @@ class TestCascadeRevision:
         s = st.load_state(book)
         r = rev.cascade_revision(book, s, 1, st.revision(s) + 5)
         assert r["ok"] is False and r["conflict"] is True
-        assert st.revision(st.load_state(book)) == 1      # 状态未被写
+        assert st.revision(st.load_state(book)) == 1  # 状态未被写
         assert "期望修订号" in r["notes"][0]
 
     def test_ok_replays_and_bumps(self, book):
@@ -48,7 +55,7 @@ class TestCascadeRevision:
         assert st.revision(s2) == 2
         assert s2["chapters"]["2"]["title"] == "第2章"
         assert s2["promises"]["P-001"]["adv_ch"] == 2
-        assert st.revision(s) == 2                        # 调用方引用同步为新状态
+        assert st.revision(s) == 2  # 调用方引用同步为新状态
 
     def test_impact_scan_after_rewrite(self, book):
         add_chapter(book, 1, prose="甲", promises_new="P-001", gaps_new="S-001")
@@ -62,15 +69,17 @@ class TestCascadeRevision:
         r = rev.cascade_revision(book, s, 2, 1)
         assert r["ok"] is True
         s2 = st.load_state(book)
-        assert s2["promises"]["P-001"]["adv_ch"] == 1        # 推进被重放回滚
+        assert s2["promises"]["P-001"]["adv_ch"] == 1  # 推进被重放回滚
         assert any("第3章" in x and "P-001" in x for x in r["impact"])
-        assert not any("S-001" in x for x in r["impact"])      # 未变项不误报
+        assert not any("S-001" in x for x in r["impact"])  # 未变项不误报
 
     def test_timeline_three_track_preserved(self, book):
         add_chapter(book, 1, prose="甲", summary="第一章小结")
         s = st.load_state(book)
-        s["timeline"] = [{"ch": 1, "event": "读者已见", "kind": "reveal"},
-                         {"ch": 1, "event": "作者独知", "kind": "private"}]
+        s["timeline"] = [
+            {"ch": 1, "event": "读者已见", "kind": "reveal"},
+            {"ch": 1, "event": "作者独知", "kind": "private"},
+        ]
         r = rev.cascade_revision(book, s, 1, 1)
         assert r["ok"] is True
         s2 = st.load_state(book)

@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
 """门禁:按 stage 过滤 collect_checks 结果,输出通过/失败清单。
 机制来源:oh-story 机检门禁(stage 分段放行),自研轻量实现。
 - prewrite:只跑 1(编号)/2(字数,允许弱提示)/3(占位符)/11(摘要);其余一律 ok 记"跳过"。
 - precommit:全量,passed = 无 fail。
 - postcommit:全量且第 10 项(追踪新鲜)必查(不得跳过,计入 fail)。"""
-from typing import Dict, Optional
+
+from typing import Dict
 
 from storyrepo.checks import collect_checks
 

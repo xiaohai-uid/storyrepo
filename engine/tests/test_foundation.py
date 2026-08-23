@@ -1,7 +1,9 @@
-# -*- coding: utf-8 -*-
 import os
-from storyrepo import config, models, state as st
-from conftest import make_book, add_chapter
+
+from conftest import add_chapter, make_book
+
+from storyrepo import config, models
+from storyrepo import state as st
 
 
 class TestConfig:
@@ -10,11 +12,12 @@ class TestConfig:
         c = config.load_config(root)
         assert c["total_chapters"] == 120
         assert c["min_words_per_chapter"] == 2000
-        assert c["max_words_per_chapter"] == 2800          # min+800
-        assert c["target_words"] == 990000                 # 默认
+        assert c["max_words_per_chapter"] == 2800  # min+800
+        assert c["target_words"] == 990000  # 默认
 
     def test_missing_book_raises(self, tmp_path):
         import pytest
+
         with pytest.raises(FileNotFoundError):
             config.load_config(str(tmp_path / "无"))
 
@@ -28,6 +31,7 @@ class TestModels:
 
     def test_bad_severity_raises(self):
         import pytest
+
         with pytest.raises(ValueError):
             models.ReviewIssue("urgent", "logic", "x", "y")
 
@@ -41,15 +45,33 @@ class TestModels:
 class TestState:
     def test_init_idempotent(self, tmp_path):
         root = make_book(str(tmp_path / "b"))
-        assert st.init_state(root) is False          # 已存在
+        assert st.init_state(root) is False  # 已存在
         assert st.load_state(root)["state_revision"] == 1
 
     def test_merge_facts(self, book):
-        add_chapter(book, 1, prose="甲", promises_new="P-001, P-002", gaps_new="S-001",
-                    entities_new="阿米,米粒")
+        add_chapter(
+            book,
+            1,
+            prose="甲",
+            promises_new="P-001, P-002",
+            gaps_new="S-001",
+            entities_new="阿米,米粒",
+        )
         s = st.load_state(book)
-        st.merge_chapter_facts(s, 1, st.frontmatter(st.chapter_files(book) and __import__("os").path.join(book, "定稿", "正文", st.chapter_files(book)[0])))
-        assert st.active_promises(s) == [("P-001", s["promises"]["P-001"]), ("P-002", s["promises"]["P-002"])]
+        st.merge_chapter_facts(
+            s,
+            1,
+            st.frontmatter(
+                st.chapter_files(book)
+                and __import__("os").path.join(
+                    book, "定稿", "正文", st.chapter_files(book)[0]
+                )
+            ),
+        )
+        assert st.active_promises(s) == [
+            ("P-001", s["promises"]["P-001"]),
+            ("P-002", s["promises"]["P-002"]),
+        ]
         assert st.unrevealed_gaps(s) == [("S-001", s["info_gaps"]["S-001"])]
         assert s["entity_states"]["阿米"]["first_ch"] == 1
         assert s["imported_through_chapter"] == 1
@@ -62,7 +84,9 @@ class TestState:
         for n in (1, 2, 3):
             fs = st.chapter_files(book)
             f = [x for x in fs if st.chapter_num(x) == n][0]
-            st.merge_chapter_facts(s, n, st.frontmatter(os.path.join(book, "定稿", "正文", f)))
+            st.merge_chapter_facts(
+                s, n, st.frontmatter(os.path.join(book, "定稿", "正文", f))
+            )
         assert st.active_promises(s) == []
         assert s["promises"]["P-001"]["done_ch"] == 3
         assert s["imported_through_chapter"] == 3
@@ -73,7 +97,9 @@ class TestState:
         s = st.load_state(book)
         for n in (1, 4):
             f = [x for x in st.chapter_files(book) if st.chapter_num(x) == n][0]
-            st.merge_chapter_facts(s, n, st.frontmatter(os.path.join(book, "定稿", "正文", f)))
+            st.merge_chapter_facts(
+                s, n, st.frontmatter(os.path.join(book, "定稿", "正文", f))
+            )
         assert st.unrevealed_gaps(s) == []
         assert s["info_gaps"]["S-001"]["reveal_ch"] == 4
 
