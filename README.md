@@ -4,6 +4,18 @@
 
 `storyrepo` 是一个 **agent skill**(SKILL.md + 写作规范 + 模板),自带一个**零依赖 Python 引擎**(`engine/`)作为支撑工具:机检门禁、状态追踪、字数账本这些机械活由脚本干,创作决策留给人或 agent。
 
+## 先跑一遍章节演示
+
+只需 Git 与 Python 3.9+。在终端运行：
+
+```bash
+git clone https://github.com/xiaohai-uid/storyrepo.git
+cd storyrepo/engine
+python -m storyrepo.cli e2e
+```
+
+演示在临时目录创建三章样稿，依次检查章节合同、上下文、评审、追踪和回炉。最后一行应显示 `e2e 全链路通过: 14 步`，退出时自动清理样稿。这个入口不需要模型密钥，也不修改本机 agent 配置。
+
 ## 为什么是 skill
 
 长篇最难的不是第一章,而是第 80、200 章以后依然:角色动机不漂移、战力时间线不打架、伏笔有登记有回收、每章事实沉淀成可检索状态。这套"必须记住、不能写崩"的约束,做成 **skill 才有用**——因为它是 agent 每次动笔前的操作宪法,不是要人记住的文档。
